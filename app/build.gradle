@@ -1,0 +1,78 @@
+plugins {
+    id "com.android.application"
+}
+
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withInputStream { stream ->
+        localProperties.load(stream)
+    }
+}
+
+def signingValue = { String envName, String propertyName ->
+    def envValue = System.getenv(envName)
+    if (envValue != null && envValue.trim().length() > 0) {
+        return envValue.trim()
+    }
+    def propertyValue = localProperties.getProperty(propertyName)
+    if (propertyValue != null && propertyValue.trim().length() > 0) {
+        return propertyValue.trim()
+    }
+    return null
+}
+
+def signingFile = { String value ->
+    if (value == null) {
+        return null
+    }
+    def fileValue = new File(value)
+    return fileValue.isAbsolute() ? fileValue : rootProject.file(value)
+}
+
+def releaseStoreFileValue = signingValue("OPEN_DESK_CALENDAR_STORE_FILE", "opendeskcalendar.storeFile")
+def releaseStorePassword = signingValue("OPEN_DESK_CALENDAR_STORE_PASSWORD", "opendeskcalendar.storePassword")
+def releaseKeyAlias = signingValue("OPEN_DESK_CALENDAR_KEY_ALIAS", "opendeskcalendar.keyAlias")
+def releaseKeyPassword = signingValue("OPEN_DESK_CALENDAR_KEY_PASSWORD", "opendeskcalendar.keyPassword")
+def hasReleaseSigning = (releaseStoreFileValue != null
+        && releaseStorePassword != null
+        && releaseKeyAlias != null
+        && releaseKeyPassword != null)
+
+android {
+    compileSdkVersion 31
+    buildToolsVersion "30.0.3"
+
+    defaultConfig {
+        applicationId "org.opendeskcalendar.app"
+        minSdkVersion 16
+        targetSdkVersion 31
+        versionCode 1
+        versionName "0.1.0-alpha"
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    signingConfigs {
+        release {
+            if (hasReleaseSigning) {
+                storeFile signingFile(releaseStoreFileValue)
+                storePassword releaseStorePassword
+                keyAlias releaseKeyAlias
+                keyPassword releaseKeyPassword
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            if (hasReleaseSigning) {
+                signingConfig signingConfigs.release
+            }
+        }
+    }
+}

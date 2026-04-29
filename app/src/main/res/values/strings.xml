@@ -1,0 +1,108 @@
+<resources>
+    <string name="app_name">Open Desk Calendar</string>
+    <string name="activity_city_settings">设置天气预报城市</string>
+    <string name="settings_title">设置</string>
+    <string name="close">关闭</string>
+    <string name="done">完成</string>
+    <string name="cancel">取消</string>
+    <string name="save">保存</string>
+    <string name="modify">修改</string>
+    <string name="choose">选择</string>
+    <string name="not_set">未设置</string>
+    <string name="unknown_error">未知错误</string>
+
+    <string name="settings_section_appearance">外观</string>
+    <string name="settings_theme">主题</string>
+    <string name="settings_show_seconds">显示秒</string>
+    <string name="settings_24_hour">24 小时制</string>
+    <string name="settings_week_monday">周一作为一周开始</string>
+    <string name="settings_font_size">字号</string>
+    <string name="settings_section_weather">天气</string>
+    <string name="settings_city">城市</string>
+    <string name="settings_host_hint">Open-Meteo 默认 Host</string>
+    <string name="settings_key_hint">可选 API Key</string>
+    <string name="settings_refresh_rate">刷新频率</string>
+    <string name="settings_section_calendar">日历</string>
+    <string name="settings_show_lunar">显示农历 / 节气 / 传统节日</string>
+    <string name="settings_show_almanac">显示宜忌</string>
+    <string name="settings_holiday_data">假日数据</string>
+    <string name="settings_holiday_version">CN 2026 v2025.11 official</string>
+    <string name="settings_section_startup">启动</string>
+    <string name="settings_boot_autostart">开机自启</string>
+    <string name="settings_home_mode">Home 桌面模式</string>
+    <string name="settings_home_guide">查看设置指引</string>
+    <string name="settings_backup_launcher">备用启动器</string>
+    <string name="settings_section_device">设备</string>
+    <string name="settings_keep_screen_on">保持屏幕常亮</string>
+    <string name="settings_show_wifi">显示 Wi-Fi 状态</string>
+    <string name="settings_section_diagnostics">诊断</string>
+    <string name="settings_recent_errors">查看最近错误</string>
+    <string name="settings_saved">设置已保存</string>
+    <string name="home_guide_title">Home 桌面模式</string>
+    <string name="home_guide_message">系统会在桌面选择器里列出 Open Desk Calendar。请手动选择本应用作为默认桌面。\n\n防锁死入口：长按时间进入设置，长按右上角 Wi-Fi 打开系统入口。</string>
+    <string name="open_home_chooser">打开桌面选择器</string>
+    <string name="choose_default_home">选择默认桌面</string>
+    <string name="choose_backup_launcher">选择备用启动器</string>
+
+    <string name="city_hint">输入城市或区县</string>
+    <string name="city_search">搜索</string>
+    <string name="city_results">搜索结果</string>
+    <string name="city_manual">手动输入经纬度</string>
+    <string name="city_latitude">纬度</string>
+    <string name="city_longitude">经度</string>
+    <string name="city_name_required">请输入城市名称</string>
+    <string name="city_empty">未找到城市，可手动输入经纬度</string>
+    <string name="city_bad_coordinates">经纬度格式不正确</string>
+    <string name="city_saved">城市已保存</string>
+    <string name="city_search_failed">城市搜索失败，可手动输入经纬度</string>
+
+    <string name="exit_title">退出 Open Desk Calendar</string>
+    <string name="exit_message">要暂时离开桌面日历屏吗？</string>
+    <string name="exit_confirm">退出</string>
+    <string name="system_entry">系统入口</string>
+    <string name="weather_updated">天气已更新</string>
+    <string name="weather_failed_cache">天气更新失败，已显示缓存数据</string>
+    <string name="system_settings_unavailable">系统设置入口不可用</string>
+    <string name="backup_launcher_unavailable">备用启动器不可用</string>
+
+    <string name="dashboard_humidity">湿度 %1$d%%</string>
+    <string name="dashboard_cache">缓存</string>
+    <string name="dashboard_forecast_title">未来三天天气</string>
+    <string name="dashboard_cached_at">缓存于 %1$s</string>
+    <string name="dashboard_updated_at">更新于 %1$s</string>
+    <string name="dashboard_good_avoid">宜：%1$s   忌：%2$s</string>
+    <string name="format_full_date">yyyy年MM月dd日  EEEE</string>
+    <string name="format_month_title">%1$04d年%2$02d月</string>
+    <string name="wifi_online">在线</string>
+    <string name="wifi_offline">离线</string>
+
+    <string name="default_city">北京</string>
+    <string name="default_district">海淀</string>
+    <string name="no_errors">暂无错误</string>
+    <string name="weather_cache_parse_failed">缓存解析失败: %1$s</string>
+    <string name="weather_cache_write_failed">缓存写入失败: %1$s</string>
+
+    <string-array name="theme_names">
+        <item>浅色</item>
+        <item>深色</item>
+        <item>黑白</item>
+        <item>电纸书</item>
+    </string-array>
+    <string-array name="font_size_names">
+        <item>小</item>
+        <item>中</item>
+        <item>大</item>
+        <item>超大</item>
+    </string-array>
+    <string-array name="refresh_names">
+        <item>30 分钟</item>
+        <item>60 分钟</item>
+        <item>120 分钟</item>
+    </string-array>
+    <string-array name="system_menu_items">
+        <item>打开系统网络设置</item>
+        <item>打开桌面选择器</item>
+        <item>打开备用启动器</item>
+        <item>刷新天气</item>
+    </string-array>
+</resources>

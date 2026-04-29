@@ -1,0 +1,108 @@
+<resources>
+    <string name="app_name">Open Desk Calendar</string>
+    <string name="activity_city_settings">設定天氣預報城市</string>
+    <string name="settings_title">設定</string>
+    <string name="close">關閉</string>
+    <string name="done">完成</string>
+    <string name="cancel">取消</string>
+    <string name="save">儲存</string>
+    <string name="modify">修改</string>
+    <string name="choose">選擇</string>
+    <string name="not_set">未設定</string>
+    <string name="unknown_error">未知錯誤</string>
+
+    <string name="settings_section_appearance">外觀</string>
+    <string name="settings_theme">主題</string>
+    <string name="settings_show_seconds">顯示秒</string>
+    <string name="settings_24_hour">24 小時制</string>
+    <string name="settings_week_monday">週一作為一週開始</string>
+    <string name="settings_font_size">字級</string>
+    <string name="settings_section_weather">天氣</string>
+    <string name="settings_city">城市</string>
+    <string name="settings_host_hint">Open-Meteo 預設 Host</string>
+    <string name="settings_key_hint">選填 API Key</string>
+    <string name="settings_refresh_rate">重新整理頻率</string>
+    <string name="settings_section_calendar">日曆</string>
+    <string name="settings_show_lunar">顯示農曆 / 節氣 / 傳統節日</string>
+    <string name="settings_show_almanac">顯示宜忌</string>
+    <string name="settings_holiday_data">假日資料</string>
+    <string name="settings_holiday_version">CN 2026 v2025.11 official</string>
+    <string name="settings_section_startup">啟動</string>
+    <string name="settings_boot_autostart">開機自動啟動</string>
+    <string name="settings_home_mode">Home 桌面模式</string>
+    <string name="settings_home_guide">查看設定指引</string>
+    <string name="settings_backup_launcher">備用啟動器</string>
+    <string name="settings_section_device">裝置</string>
+    <string name="settings_keep_screen_on">保持螢幕常亮</string>
+    <string name="settings_show_wifi">顯示 Wi-Fi 狀態</string>
+    <string name="settings_section_diagnostics">診斷</string>
+    <string name="settings_recent_errors">查看最近錯誤</string>
+    <string name="settings_saved">設定已儲存</string>
+    <string name="home_guide_title">Home 桌面模式</string>
+    <string name="home_guide_message">系統會在桌面選擇器裡列出 Open Desk Calendar。請手動選擇本應用作為預設桌面。\n\n防鎖死入口：長按時間進入設定，長按右上角 Wi-Fi 開啟系統入口。</string>
+    <string name="open_home_chooser">開啟桌面選擇器</string>
+    <string name="choose_default_home">選擇預設桌面</string>
+    <string name="choose_backup_launcher">選擇備用啟動器</string>
+
+    <string name="city_hint">輸入城市或區縣</string>
+    <string name="city_search">搜尋</string>
+    <string name="city_results">搜尋結果</string>
+    <string name="city_manual">手動輸入經緯度</string>
+    <string name="city_latitude">緯度</string>
+    <string name="city_longitude">經度</string>
+    <string name="city_name_required">請輸入城市名稱</string>
+    <string name="city_empty">找不到城市，可手動輸入經緯度</string>
+    <string name="city_bad_coordinates">經緯度格式不正確</string>
+    <string name="city_saved">城市已儲存</string>
+    <string name="city_search_failed">城市搜尋失敗，可手動輸入經緯度</string>
+
+    <string name="exit_title">退出 Open Desk Calendar</string>
+    <string name="exit_message">要暫時離開桌面日曆屏嗎？</string>
+    <string name="exit_confirm">退出</string>
+    <string name="system_entry">系統入口</string>
+    <string name="weather_updated">天氣已更新</string>
+    <string name="weather_failed_cache">天氣更新失敗，已顯示快取資料</string>
+    <string name="system_settings_unavailable">系統設定入口不可用</string>
+    <string name="backup_launcher_unavailable">備用啟動器不可用</string>
+
+    <string name="dashboard_humidity">濕度 %1$d%%</string>
+    <string name="dashboard_cache">快取</string>
+    <string name="dashboard_forecast_title">未來三天天氣</string>
+    <string name="dashboard_cached_at">快取於 %1$s</string>
+    <string name="dashboard_updated_at">更新於 %1$s</string>
+    <string name="dashboard_good_avoid">宜：%1$s   忌：%2$s</string>
+    <string name="format_full_date">yyyy年MM月dd日  EEEE</string>
+    <string name="format_month_title">%1$04d年%2$02d月</string>
+    <string name="wifi_online">線上</string>
+    <string name="wifi_offline">離線</string>
+
+    <string name="default_city">北京</string>
+    <string name="default_district">海淀</string>
+    <string name="no_errors">暫無錯誤</string>
+    <string name="weather_cache_parse_failed">快取解析失敗: %1$s</string>
+    <string name="weather_cache_write_failed">快取寫入失敗: %1$s</string>
+
+    <string-array name="theme_names">
+        <item>淺色</item>
+        <item>深色</item>
+        <item>黑白</item>
+        <item>電子紙</item>
+    </string-array>
+    <string-array name="font_size_names">
+        <item>小</item>
+        <item>中</item>
+        <item>大</item>
+        <item>超大</item>
+    </string-array>
+    <string-array name="refresh_names">
+        <item>30 分鐘</item>
+        <item>60 分鐘</item>
+        <item>120 分鐘</item>
+    </string-array>
+    <string-array name="system_menu_items">
+        <item>開啟系統網路設定</item>
+        <item>開啟桌面選擇器</item>
+        <item>開啟備用啟動器</item>
+        <item>重新整理天氣</item>
+    </string-array>
+</resources>
