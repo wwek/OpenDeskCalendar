@@ -104,6 +104,23 @@ OPEN_DESK_CALENDAR_KEY_ALIAS=opendeskcalendar
 OPEN_DESK_CALENDAR_KEY_PASSWORD=...
 ```
 
+GitHub Actions 不提交 keystore 檔案。把本機 release keystore 轉成單行 base64：
+
+```sh
+base64 < .local/signing/opendeskcalendar-release.jks | tr -d '\n'
+```
+
+在 GitHub 倉庫的 `Settings` -> `Secrets and variables` -> `Actions` 新增這些 Repository secrets：
+
+```text
+OPEN_DESK_CALENDAR_RELEASE_KEYSTORE_BASE64
+OPEN_DESK_CALENDAR_STORE_PASSWORD
+OPEN_DESK_CALENDAR_KEY_ALIAS
+OPEN_DESK_CALENDAR_KEY_PASSWORD
+```
+
+PR 和 `main` 分支會建置 debug APK。手動觸發 workflow 或推送 `v*` tag 時會用這些 secrets 建置簽名 release APK，並上傳為 workflow artifact。
+
 ## 執行說明
 
 - 預設城市是北京海淀。

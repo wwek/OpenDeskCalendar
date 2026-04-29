@@ -83,8 +83,8 @@
     <string name="weather_cache_write_failed">快取寫入失敗: %1$s</string>
 
     <string-array name="theme_names">
-        <item>淺色</item>
-        <item>深色</item>
+        <item>亮色</item>
+        <item>暗色</item>
         <item>黑白</item>
         <item>電子紙</item>
     </string-array>

@@ -47,7 +47,7 @@ public final class PreferencesStore {
     }
 
     public AppSettings getSettings() {
-        String theme = preferences.getString(KEY_THEME, AppSettings.THEME_LIGHT);
+        String theme = preferences.getString(KEY_THEME, AppSettings.THEME_DARK);
         boolean eink = AppSettings.THEME_EINK.equals(theme);
         return new AppSettings(
                 theme,

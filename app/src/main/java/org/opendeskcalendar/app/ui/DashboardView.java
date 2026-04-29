@@ -205,6 +205,20 @@ public final class DashboardView extends FrameLayout {
         });
         bar.addView(city, new LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f));
 
+        TextView settingsButton = label(getResources().getString(R.string.settings_title), 16, palette.secondary, false);
+        settingsButton.setSingleLine(true);
+        settingsButton.setGravity(Gravity.CENTER);
+        settingsButton.setPadding(dp(8), dp(4), dp(8), dp(4));
+        settingsButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (listener != null) {
+                    listener.onOpenSettings();
+                }
+            }
+        });
+        bar.addView(settingsButton, new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+
         TextView state = label(settings.showWifi ? networkState.label : "", 17, palette.secondary, false);
         state.setSingleLine(true);
         state.setGravity(Gravity.RIGHT);
@@ -247,13 +261,13 @@ public final class DashboardView extends FrameLayout {
         LinearLayout row = horizontal();
         row.setGravity(Gravity.CENTER | Gravity.BOTTOM);
         String main = settings.use24Hour ? time24Format.format(now.getTime()) : time12Format.format(now.getTime());
-        TextView time = label(main, compact ? 68 : 88, palette.primary, true);
+        TextView time = label(main, compact ? 68 : 54, palette.primary, true);
         time.setIncludeFontPadding(false);
         time.setSingleLine(true);
         row.addView(time, new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
 
         if (settings.showSeconds && !settings.isEink()) {
-            TextView seconds = label(secondFormat.format(now.getTime()), compact ? 23 : 30, palette.secondary, false);
+            TextView seconds = label(secondFormat.format(now.getTime()), compact ? 23 : 20, palette.secondary, false);
             seconds.setIncludeFontPadding(false);
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
             params.leftMargin = dp(6);
@@ -261,7 +275,7 @@ public final class DashboardView extends FrameLayout {
             row.addView(seconds, params);
         }
         if (!settings.use24Hour) {
-            TextView suffix = label(amPmFormat.format(now.getTime()), compact ? 16 : 20, palette.secondary, false);
+            TextView suffix = label(amPmFormat.format(now.getTime()), compact ? 16 : 16, palette.secondary, false);
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
             params.leftMargin = dp(8);
             params.bottomMargin = compact ? dp(8) : dp(12);
@@ -364,7 +378,7 @@ public final class DashboardView extends FrameLayout {
         section.setPadding(dp(12), compact ? dp(7) : dp(12), dp(12), compact ? dp(7) : dp(12));
 
         TextView title = label(getResources().getString(R.string.format_month_title, month.year, month.month),
-                compact ? 19 : 24,
+                compact ? 19 : 22,
                 palette.primary,
                 true);
         title.setGravity(Gravity.CENTER);
@@ -383,7 +397,7 @@ public final class DashboardView extends FrameLayout {
         ChineseLunarCalendar.LunarDate lunar = ChineseLunarCalendar.fromSolar(
                 now.get(Calendar.YEAR), now.get(Calendar.MONTH) + 1, now.get(Calendar.DAY_OF_MONTH));
         TextView lunarTitle = label(localize(lunar.monthName + lunar.dayName + "  " + ChineseLunarCalendar.ganzhiAnimal(lunar)),
-                compact ? 12 : 16,
+                compact ? 12 : 14,
                 palette.secondary,
                 false);
         lunarTitle.setGravity(Gravity.CENTER);
@@ -436,13 +450,13 @@ public final class DashboardView extends FrameLayout {
 
         LinearLayout texts = vertical();
         texts.setGravity(Gravity.CENTER);
-        TextView number = label(String.valueOf(day.day), compact ? 14 : 19, dayColor(day), true);
+        TextView number = label(String.valueOf(day.day), compact ? 14 : 14, dayColor(day), true);
         number.setGravity(Gravity.CENTER);
         number.setIncludeFontPadding(false);
         texts.addView(number, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, 0, 1f));
 
         TextView lower = label(settings.showLunar && (!compact || day.inMonth) ? localize(day.lowerLabel()) : "",
-                compact ? 8 : 12,
+                compact ? 8 : 9,
                 day.inMonth ? palette.secondary : palette.muted,
                 false);
         lower.setGravity(Gravity.CENTER);
@@ -453,7 +467,7 @@ public final class DashboardView extends FrameLayout {
         cell.addView(texts, matchFrame());
 
         if (day.holiday != null) {
-            TextView badge = label(localize(day.holiday.badge), compact ? 8 : 12, badgeColor(day), true);
+            TextView badge = label(localize(day.holiday.badge), compact ? 8 : 9, badgeColor(day), true);
             badge.setGravity(Gravity.RIGHT | Gravity.TOP);
             FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, Gravity.RIGHT | Gravity.TOP);
             cell.addView(badge, params);
