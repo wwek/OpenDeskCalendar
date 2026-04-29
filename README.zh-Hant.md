@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="https://github.com/wwek/OpenDeskCalendar/actions/workflows/android-build.yml"><img src="https://img.shields.io/github/actions/workflow/status/wwek/OpenDeskCalendar/android-build.yml?branch=main&label=Android%20Build" alt="Android Build"></a>
-  <img src="https://img.shields.io/badge/minSdk-16-2563eb" alt="minSdk 16">
+  <img src="https://img.shields.io/badge/Android-4.1%2B%20(API%2016%2B)-2563eb" alt="Android 4.1+ API 16+">
   <img src="https://img.shields.io/badge/version-0.1.0--alpha-0f766e" alt="version 0.1.0-alpha">
   <img src="https://img.shields.io/badge/language-Java-f59e0b" alt="Java">
   <img src="https://img.shields.io/badge/license-Apache--2.0-111827" alt="Apache-2.0">
@@ -20,7 +20,7 @@ OpenDeskCalendar 是一個面向舊手機、舊平板和 Android 電子紙裝置
 
 本 alpha 已實作：
 
-- 原生 Android 工程，`minSdkVersion 16`。
+- 原生 Android 工程，最低支援 Android 4.1 Jelly Bean（API 16，`minSdkVersion 16`）。
 - 全螢幕、常亮的桌面資訊屏。
 - 橫屏優先主介面：大時鐘、日期、農曆、天氣、三日預報、月曆、Wi-Fi 狀態和宜忌。
 - 直向螢幕適配版面。
@@ -28,23 +28,27 @@ OpenDeskCalendar 是一個面向舊手機、舊平板和 Android 電子紙裝置
 - 本地農曆、節氣、傳統節日，以及 2026 中國大陸休/班角標。
 - Open-Meteo 天氣源和本地快取回退。
 - 城市搜尋和手動經緯度輸入。
-- 設定頁：外觀、天氣、日曆、自動啟動、桌面模式、診斷。
+- HTTP / Home Assistant JSON 室內溫濕度接入。
+- 設定頁：外觀、天氣、室內溫濕度、日曆、自動啟動、桌面模式、診斷。
 - 使用者主動開啟的開機自動啟動。
 - Home/Launcher Activity，以及長按進入設定和系統入口的防鎖死路徑。
+- 夜間自動降亮度、退出確認開關和診斷日誌匯出。
+- 本機 release 簽名腳本和 GitHub Actions release 建置入口。
 - 簡體中文和繁體中文介面資源。
 
 尚未完成：
 
-- 真實室內溫濕度接入。
-- MQTT / Home Assistant 接入。
+- 直接 MQTT 客戶端接入。
 - 假日資料線上更新。
+- 多城市輪播。
+- 空氣品質和天氣預警。
 - 自訂天氣介面欄位映射。
-- 發布分發流水線。
 
 ## 建置
 
 需求：
 
+- Android 4.1 Jelly Bean（API 16）或更高版本的裝置 / 模擬器。
 - 已安裝 Android SDK。
 - JDK 8。
 - 首次建置需要網路存取，Gradle Wrapper 會下載 Gradle 6.9.4。

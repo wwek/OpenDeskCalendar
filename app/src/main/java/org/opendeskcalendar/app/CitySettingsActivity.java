@@ -167,7 +167,12 @@ public final class CitySettingsActivity extends Activity {
                 lon,
                 current.weatherHost,
                 current.weatherKey,
-                current.backupLauncherPackage);
+                current.backupLauncherPackage,
+                current.confirmExit,
+                current.nightDimEnabled,
+                current.indoorEnabled,
+                current.indoorEndpoint,
+                current.indoorToken);
         store.saveSettings(settings);
         Toast.makeText(this, R.string.city_saved, Toast.LENGTH_SHORT).show();
         finish();

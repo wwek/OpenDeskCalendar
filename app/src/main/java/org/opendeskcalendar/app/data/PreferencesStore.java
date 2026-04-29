@@ -35,7 +35,13 @@ public final class PreferencesStore {
     private static final String KEY_HOST = "host";
     private static final String KEY_KEY = "api_key";
     private static final String KEY_BACKUP = "backup_launcher";
+    private static final String KEY_CONFIRM_EXIT = "confirm_exit";
+    private static final String KEY_NIGHT_DIM = "night_dim";
+    private static final String KEY_INDOOR_ENABLED = "indoor_enabled";
+    private static final String KEY_INDOOR_ENDPOINT = "indoor_endpoint";
+    private static final String KEY_INDOOR_TOKEN = "indoor_token";
     private static final String KEY_WEATHER = "weather_snapshot";
+    private static final String KEY_INDOOR = "indoor_snapshot";
     private static final String KEY_ERRORS = "error_log";
 
     private final Context context;
@@ -67,7 +73,12 @@ public final class PreferencesStore {
                 Double.longBitsToDouble(preferences.getLong(KEY_LON, Double.doubleToLongBits(116.2985d))),
                 preferences.getString(KEY_HOST, ""),
                 preferences.getString(KEY_KEY, ""),
-                preferences.getString(KEY_BACKUP, ""));
+                preferences.getString(KEY_BACKUP, ""),
+                preferences.getBoolean(KEY_CONFIRM_EXIT, true),
+                preferences.getBoolean(KEY_NIGHT_DIM, false),
+                preferences.getBoolean(KEY_INDOOR_ENABLED, false),
+                preferences.getString(KEY_INDOOR_ENDPOINT, ""),
+                preferences.getString(KEY_INDOOR_TOKEN, ""));
     }
 
     public void saveSettings(AppSettings settings) {
@@ -90,7 +101,46 @@ public final class PreferencesStore {
                 .putString(KEY_HOST, safe(settings.weatherHost))
                 .putString(KEY_KEY, safe(settings.weatherKey))
                 .putString(KEY_BACKUP, safe(settings.backupLauncherPackage))
+                .putBoolean(KEY_CONFIRM_EXIT, settings.confirmExit)
+                .putBoolean(KEY_NIGHT_DIM, settings.nightDimEnabled)
+                .putBoolean(KEY_INDOOR_ENABLED, settings.indoorEnabled)
+                .putString(KEY_INDOOR_ENDPOINT, safe(settings.indoorEndpoint))
+                .putString(KEY_INDOOR_TOKEN, safe(settings.indoorToken))
                 .apply();
+    }
+
+    public IndoorSnapshot readIndoor() {
+        String raw = preferences.getString(KEY_INDOOR, "");
+        if (raw.length() == 0) {
+            return IndoorSnapshot.empty();
+        }
+        try {
+            JSONObject json = new JSONObject(raw);
+            return new IndoorSnapshot(
+                    json.optDouble("temperature", Double.NaN),
+                    json.optDouble("humidity", Double.NaN),
+                    json.optLong("updatedAt", 0L),
+                    true);
+        } catch (JSONException e) {
+            recordError("Sensor", context.getString(R.string.indoor_cache_parse_failed, e.getMessage()));
+            return IndoorSnapshot.empty();
+        }
+    }
+
+    public void saveIndoor(IndoorSnapshot snapshot) {
+        if (snapshot == null || !snapshot.hasData()) {
+            preferences.edit().remove(KEY_INDOOR).apply();
+            return;
+        }
+        try {
+            JSONObject json = new JSONObject();
+            json.put("temperature", snapshot.temperatureCelsius);
+            json.put("humidity", snapshot.humidityPercent);
+            json.put("updatedAt", snapshot.updatedAtMillis);
+            preferences.edit().putString(KEY_INDOOR, json.toString()).apply();
+        } catch (JSONException e) {
+            recordError("Sensor", context.getString(R.string.indoor_cache_write_failed, e.getMessage()));
+        }
     }
 
     public WeatherSnapshot readWeather(AppSettings settings) {
@@ -224,6 +274,9 @@ public final class PreferencesStore {
         }
         return message.replaceAll("(?i)(key=)[^&\\s]+", "$1***")
                 .replaceAll("(?i)(apikey=)[^&\\s]+", "$1***")
-                .replaceAll("(?i)(api_key=)[^&\\s]+", "$1***");
+                .replaceAll("(?i)(api_key=)[^&\\s]+", "$1***")
+                .replaceAll("(?i)(token=)[^&\\s]+", "$1***")
+                .replaceAll("(?i)(Authorization:\\s*Bearer\\s+)[^\\s]+", "$1***")
+                .replaceAll("(?i)(Bearer\\s+)[^\\s]+", "$1***");
     }
 }

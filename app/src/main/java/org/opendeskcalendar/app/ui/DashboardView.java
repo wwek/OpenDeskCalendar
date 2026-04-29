@@ -21,6 +21,7 @@ import org.opendeskcalendar.app.calendar.ChineseLunarCalendar;
 import org.opendeskcalendar.app.data.AppSettings;
 import org.opendeskcalendar.app.data.CalendarDay;
 import org.opendeskcalendar.app.data.ForecastDay;
+import org.opendeskcalendar.app.data.IndoorSnapshot;
 import org.opendeskcalendar.app.data.MonthGrid;
 import org.opendeskcalendar.app.data.WeatherSnapshot;
 import org.opendeskcalendar.app.net.NetworkState;
@@ -52,6 +53,7 @@ public final class DashboardView extends FrameLayout {
     private AppSettings settings;
     private ThemePalette palette;
     private WeatherSnapshot weather;
+    private IndoorSnapshot indoor;
     private MonthGrid month;
     private NetworkState networkState;
     private TextView messageView;
@@ -86,10 +88,11 @@ public final class DashboardView extends FrameLayout {
         this.listener = listener;
     }
 
-    public void update(AppSettings settings, WeatherSnapshot weather, MonthGrid month, NetworkState networkState) {
+    public void update(AppSettings settings, WeatherSnapshot weather, IndoorSnapshot indoor, MonthGrid month, NetworkState networkState) {
         this.settings = settings;
         this.palette = ThemePalette.from(settings);
         this.weather = weather;
+        this.indoor = indoor;
         this.month = month;
         this.networkState = networkState;
         buildLayout();
@@ -221,7 +224,7 @@ public final class DashboardView extends FrameLayout {
 
         TextView state = label(settings.showWifi ? networkState.label : "", 17, palette.secondary, false);
         state.setSingleLine(true);
-        state.setGravity(Gravity.RIGHT);
+        state.setGravity(Gravity.END);
         state.setOnLongClickListener(new OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
@@ -312,18 +315,25 @@ public final class DashboardView extends FrameLayout {
         LinearLayout right = vertical();
         right.setGravity(Gravity.CENTER_VERTICAL);
         TextView cache = label(weather.fromCache ? getResources().getString(R.string.dashboard_cache) : "", 14, palette.warning, true);
-        cache.setGravity(Gravity.RIGHT);
+        cache.setGravity(Gravity.END);
         right.addView(cache, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
         TextView humidity = label(getResources().getString(R.string.dashboard_humidity, weather.humidityPercent), 14, palette.secondary, false);
-        humidity.setGravity(Gravity.RIGHT);
+        humidity.setGravity(Gravity.END);
         humidity.setSingleLine(true);
         humidity.setEllipsize(TextUtils.TruncateAt.END);
         right.addView(humidity, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
         TextView wind = label(localize(weather.condition + " | " + weather.wind), 14, palette.secondary, false);
-        wind.setGravity(Gravity.RIGHT);
+        wind.setGravity(Gravity.END);
         wind.setSingleLine(true);
         wind.setEllipsize(TextUtils.TruncateAt.END);
         right.addView(wind, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+        if (settings.indoorEnabled && indoor != null && indoor.hasData()) {
+            TextView indoorView = label(indoorText(), 14, palette.secondary, false);
+            indoorView.setGravity(Gravity.END);
+            indoorView.setSingleLine(true);
+            indoorView.setEllipsize(TextUtils.TruncateAt.END);
+            right.addView(indoorView, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+        }
         section.addView(right, new LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f));
         return section;
     }
@@ -468,8 +478,8 @@ public final class DashboardView extends FrameLayout {
 
         if (day.holiday != null) {
             TextView badge = label(localize(day.holiday.badge), compact ? 8 : 9, badgeColor(day), true);
-            badge.setGravity(Gravity.RIGHT | Gravity.TOP);
-            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, Gravity.RIGHT | Gravity.TOP);
+            badge.setGravity(Gravity.END | Gravity.TOP);
+            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, Gravity.END | Gravity.TOP);
             cell.addView(badge, params);
         }
         return cell;
@@ -498,7 +508,7 @@ public final class DashboardView extends FrameLayout {
             TextView text = label(almanac, compact ? 11 : 16, palette.secondary, false);
             text.setSingleLine(true);
             text.setEllipsize(TextUtils.TruncateAt.END);
-            text.setGravity(compact ? Gravity.LEFT : Gravity.RIGHT);
+            text.setGravity(compact ? Gravity.START : Gravity.END);
             section.addView(text, new LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT, compact ? 0f : 0.65f));
         }
         if (compact) {
@@ -611,6 +621,17 @@ public final class DashboardView extends FrameLayout {
 
     private String localize(String value) {
         return ChineseText.display(getContext(), value);
+    }
+
+    private String indoorText() {
+        StringBuilder builder = new StringBuilder(getResources().getString(R.string.dashboard_indoor));
+        if (!Double.isNaN(indoor.temperatureCelsius)) {
+            builder.append(' ').append(Math.round(indoor.temperatureCelsius)).append("°C");
+        }
+        if (!Double.isNaN(indoor.humidityPercent)) {
+            builder.append(' ').append(getResources().getString(R.string.dashboard_humidity, Math.round(indoor.humidityPercent)));
+        }
+        return builder.toString();
     }
 
     private int dp(float value) {

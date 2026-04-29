@@ -22,6 +22,12 @@
     <string name="settings_host_hint">Open-Meteo 默认 Host</string>
     <string name="settings_key_hint">可选 API Key</string>
     <string name="settings_refresh_rate">刷新频率</string>
+    <string name="settings_section_indoor">室内温湿度</string>
+    <string name="settings_indoor_enabled">启用室内传感器</string>
+    <string name="settings_indoor_endpoint">地址</string>
+    <string name="settings_indoor_endpoint_hint">HTTP / Home Assistant JSON 地址</string>
+    <string name="settings_indoor_token">Token</string>
+    <string name="settings_indoor_token_hint">可选 Bearer Token</string>
     <string name="settings_section_calendar">日历</string>
     <string name="settings_show_lunar">显示农历 / 节气 / 传统节日</string>
     <string name="settings_show_almanac">显示宜忌</string>
@@ -35,8 +41,11 @@
     <string name="settings_section_device">设备</string>
     <string name="settings_keep_screen_on">保持屏幕常亮</string>
     <string name="settings_show_wifi">显示 Wi-Fi 状态</string>
+    <string name="settings_night_dim">夜间自动降亮度（22:00 至 06:00）</string>
+    <string name="settings_confirm_exit">返回键退出前确认</string>
     <string name="settings_section_diagnostics">诊断</string>
     <string name="settings_recent_errors">查看最近错误</string>
+    <string name="settings_export_logs">导出诊断日志</string>
     <string name="settings_saved">设置已保存</string>
     <string name="home_guide_title">Home 桌面模式</string>
     <string name="home_guide_message">系统会在桌面选择器里列出 Open Desk Calendar。请手动选择本应用作为默认桌面。\n\n防锁死入口：长按时间进入设置，长按右上角 Wi-Fi 打开系统入口。</string>
@@ -66,6 +75,7 @@
     <string name="backup_launcher_unavailable">备用启动器不可用</string>
 
     <string name="dashboard_humidity">湿度 %1$d%%</string>
+    <string name="dashboard_indoor">室内</string>
     <string name="dashboard_cache">缓存</string>
     <string name="dashboard_forecast_title">未来三天天气</string>
     <string name="dashboard_cached_at">缓存于 %1$s</string>
@@ -81,6 +91,8 @@
     <string name="no_errors">暂无错误</string>
     <string name="weather_cache_parse_failed">缓存解析失败: %1$s</string>
     <string name="weather_cache_write_failed">缓存写入失败: %1$s</string>
+    <string name="indoor_cache_parse_failed">室内缓存解析失败: %1$s</string>
+    <string name="indoor_cache_write_failed">室内缓存写入失败: %1$s</string>
 
     <string-array name="theme_names">
         <item>亮色</item>

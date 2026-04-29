@@ -18,9 +18,11 @@ import org.opendeskcalendar.app.calendar.CalendarRepository;
 import org.opendeskcalendar.app.calendar.HolidayRepository;
 import org.opendeskcalendar.app.data.AppSettings;
 import org.opendeskcalendar.app.data.CalendarDay;
+import org.opendeskcalendar.app.data.IndoorSnapshot;
 import org.opendeskcalendar.app.data.MonthGrid;
 import org.opendeskcalendar.app.data.PreferencesStore;
 import org.opendeskcalendar.app.data.WeatherSnapshot;
+import org.opendeskcalendar.app.net.IndoorSensorService;
 import org.opendeskcalendar.app.net.NetworkState;
 import org.opendeskcalendar.app.net.WeatherService;
 import org.opendeskcalendar.app.ui.ChineseText;
@@ -36,12 +38,14 @@ public class MainActivity extends Activity implements DashboardView.Listener {
     private DashboardView dashboardView;
     private AppSettings settings;
     private WeatherSnapshot weather;
+    private IndoorSnapshot indoor;
     private Calendar visibleMonth;
     private boolean launchedBackupByTap;
 
     private final Runnable tick = new Runnable() {
         @Override
         public void run() {
+            applyNightDim();
             refreshDashboard();
             long delay = settings != null && settings.showSeconds && !settings.isEink() ? 1000L : 60000L;
             handler.postDelayed(this, delay);
@@ -62,6 +66,7 @@ public class MainActivity extends Activity implements DashboardView.Listener {
         loadState();
         refreshDashboard();
         refreshWeatherIfNeeded(false);
+        refreshIndoorIfNeeded(false);
     }
 
     @Override
@@ -69,6 +74,7 @@ public class MainActivity extends Activity implements DashboardView.Listener {
         super.onResume();
         loadState();
         refreshDashboard();
+        refreshIndoorIfNeeded(false);
         handler.removeCallbacks(tick);
         handler.post(tick);
     }
@@ -81,6 +87,10 @@ public class MainActivity extends Activity implements DashboardView.Listener {
 
     @Override
     public void onBackPressed() {
+        if (settings != null && !settings.confirmExit) {
+            finish();
+            return;
+        }
         new AlertDialog.Builder(this)
                 .setTitle(R.string.exit_title)
                 .setMessage(R.string.exit_message)
@@ -147,7 +157,9 @@ public class MainActivity extends Activity implements DashboardView.Listener {
         } else {
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
+        applyNightDim();
         weather = store.readWeather(settings);
+        indoor = store.readIndoor();
     }
 
     private void refreshDashboard() {
@@ -155,7 +167,7 @@ public class MainActivity extends Activity implements DashboardView.Listener {
             return;
         }
         MonthGrid month = calendarRepository.buildMonth(visibleMonth, settings);
-        dashboardView.update(settings, weather, month, NetworkState.from(this));
+        dashboardView.update(settings, weather, indoor, month, NetworkState.from(this));
     }
 
     private void refreshWeatherIfNeeded(boolean force) {
@@ -182,6 +194,44 @@ public class MainActivity extends Activity implements DashboardView.Listener {
         weather = store.readWeather(settings);
         refreshDashboard();
         dashboardView.showMessage(getString(R.string.weather_failed_cache));
+    }
+
+    private void refreshIndoorIfNeeded(boolean force) {
+        if (!settings.indoorEnabled) {
+            indoor = IndoorSnapshot.empty();
+            store.saveIndoor(indoor);
+            refreshDashboard();
+            return;
+        }
+        boolean stale = indoor == null || indoor.updatedAtMillis == 0L
+                || System.currentTimeMillis() - indoor.updatedAtMillis > settings.weatherRefreshMinutes * 60000L;
+        if (!force && !stale) {
+            return;
+        }
+        new IndoorTask(this).execute(settings);
+    }
+
+    private void applyIndoor(IndoorSnapshot snapshot) {
+        indoor = snapshot;
+        store.saveIndoor(snapshot);
+        refreshDashboard();
+    }
+
+    private void failIndoor(String message) {
+        store.recordError("Sensor", message);
+        indoor = store.readIndoor();
+        refreshDashboard();
+    }
+
+    private void applyNightDim() {
+        WindowManager.LayoutParams params = getWindow().getAttributes();
+        if (!settings.nightDimEnabled) {
+            params.screenBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE;
+        } else {
+            int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+            params.screenBrightness = hour >= 22 || hour < 6 ? 0.12f : WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE;
+        }
+        getWindow().setAttributes(params);
     }
 
     private void openSystemSettings(String action) {
@@ -247,6 +297,38 @@ public class MainActivity extends Activity implements DashboardView.Listener {
                 activity.applyWeather(snapshot, forced);
             } else {
                 activity.failWeather(error == null ? activity.getString(R.string.unknown_error) : error.getMessage());
+            }
+        }
+    }
+
+    static final class IndoorTask extends AsyncTask<AppSettings, Void, IndoorSnapshot> {
+        private final WeakReference<MainActivity> activityRef;
+        private Exception error;
+
+        IndoorTask(MainActivity activity) {
+            this.activityRef = new WeakReference<MainActivity>(activity);
+        }
+
+        @Override
+        protected IndoorSnapshot doInBackground(AppSettings... params) {
+            try {
+                return new IndoorSensorService().fetch(params[0]);
+            } catch (Exception e) {
+                error = e;
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(IndoorSnapshot snapshot) {
+            MainActivity activity = activityRef.get();
+            if (activity == null || activity.isFinishing()) {
+                return;
+            }
+            if (snapshot != null) {
+                activity.applyIndoor(snapshot);
+            } else {
+                activity.failIndoor(error == null ? activity.getString(R.string.unknown_error) : error.getMessage());
             }
         }
     }

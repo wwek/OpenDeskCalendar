@@ -24,6 +24,11 @@ public final class AppSettings {
     public final String weatherHost;
     public final String weatherKey;
     public final String backupLauncherPackage;
+    public final boolean confirmExit;
+    public final boolean nightDimEnabled;
+    public final boolean indoorEnabled;
+    public final String indoorEndpoint;
+    public final String indoorToken;
 
     public AppSettings(
             String theme,
@@ -43,7 +48,12 @@ public final class AppSettings {
             double longitude,
             String weatherHost,
             String weatherKey,
-            String backupLauncherPackage) {
+            String backupLauncherPackage,
+            boolean confirmExit,
+            boolean nightDimEnabled,
+            boolean indoorEnabled,
+            String indoorEndpoint,
+            String indoorToken) {
         this.theme = theme;
         this.showSeconds = showSeconds;
         this.use24Hour = use24Hour;
@@ -62,6 +72,11 @@ public final class AppSettings {
         this.weatherHost = weatherHost;
         this.weatherKey = weatherKey;
         this.backupLauncherPackage = backupLauncherPackage;
+        this.confirmExit = confirmExit;
+        this.nightDimEnabled = nightDimEnabled;
+        this.indoorEnabled = indoorEnabled;
+        this.indoorEndpoint = indoorEndpoint;
+        this.indoorToken = indoorToken;
     }
 
     public boolean isEink() {

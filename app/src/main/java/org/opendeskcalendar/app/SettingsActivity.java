@@ -10,6 +10,7 @@ import android.provider.Settings;
 import android.text.InputType;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ArrayAdapter;
@@ -26,6 +27,7 @@ import org.opendeskcalendar.app.R;
 import org.opendeskcalendar.app.data.AppSettings;
 import org.opendeskcalendar.app.data.PreferencesStore;
 import org.opendeskcalendar.app.ui.ChineseText;
+import org.opendeskcalendar.app.ui.ThemePalette;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +35,7 @@ import java.util.List;
 public final class SettingsActivity extends Activity {
     private PreferencesStore store;
     private AppSettings current;
+    private ThemePalette palette;
     private Spinner themeSpinner;
     private Spinner fontSpinner;
     private Spinner refreshSpinner;
@@ -44,8 +47,13 @@ public final class SettingsActivity extends Activity {
     private CheckBox lunarCheck;
     private CheckBox almanacCheck;
     private CheckBox wifiCheck;
+    private CheckBox confirmExitCheck;
+    private CheckBox nightDimCheck;
+    private CheckBox indoorCheck;
     private EditText hostEdit;
     private EditText keyEdit;
+    private EditText indoorEndpointEdit;
+    private EditText indoorTokenEdit;
     private TextView cityValue;
     private TextView backupValue;
     private String backupPackage;
@@ -57,6 +65,7 @@ public final class SettingsActivity extends Activity {
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         store = new PreferencesStore(this);
         current = store.getSettings();
+        palette = ThemePalette.from(current);
         backupPackage = current.backupLauncherPackage;
         setContentView(buildContent());
         bindCurrent();
@@ -64,9 +73,11 @@ public final class SettingsActivity extends Activity {
 
     private View buildContent() {
         ScrollView scrollView = new ScrollView(this);
+        scrollView.setBackgroundColor(palette.background);
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
         root.setPadding(dp(18), dp(14), dp(18), dp(14));
+        root.setBackgroundColor(palette.background);
         scrollView.addView(root);
 
         TextView title = text(getString(R.string.settings_title), 26, true);
@@ -96,6 +107,15 @@ public final class SettingsActivity extends Activity {
         refreshSpinner = spinner(getResources().getStringArray(R.array.refresh_names));
         root.addView(row(getString(R.string.settings_refresh_rate), refreshSpinner));
 
+        root.addView(section(getString(R.string.settings_section_indoor)));
+        indoorCheck = check(getString(R.string.settings_indoor_enabled));
+        root.addView(indoorCheck);
+        indoorEndpointEdit = edit(getString(R.string.settings_indoor_endpoint_hint));
+        root.addView(row(getString(R.string.settings_indoor_endpoint), indoorEndpointEdit));
+        indoorTokenEdit = edit(getString(R.string.settings_indoor_token_hint));
+        indoorTokenEdit.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        root.addView(row(getString(R.string.settings_indoor_token), indoorTokenEdit));
+
         root.addView(section(getString(R.string.settings_section_calendar)));
         lunarCheck = check(getString(R.string.settings_show_lunar));
         almanacCheck = check(getString(R.string.settings_show_almanac));
@@ -118,8 +138,12 @@ public final class SettingsActivity extends Activity {
         root.addView(section(getString(R.string.settings_section_device)));
         keepOnCheck = check(getString(R.string.settings_keep_screen_on));
         wifiCheck = check(getString(R.string.settings_show_wifi));
+        nightDimCheck = check(getString(R.string.settings_night_dim));
+        confirmExitCheck = check(getString(R.string.settings_confirm_exit));
         root.addView(keepOnCheck);
         root.addView(wifiCheck);
+        root.addView(nightDimCheck);
+        root.addView(confirmExitCheck);
 
         root.addView(section(getString(R.string.settings_section_diagnostics)));
         Button errors = button(getString(R.string.settings_recent_errors));
@@ -129,6 +153,9 @@ public final class SettingsActivity extends Activity {
                 .setPositiveButton(R.string.close, null)
                 .show());
         root.addView(errors);
+        Button export = button(getString(R.string.settings_export_logs));
+        export.setOnClickListener(v -> exportLogs());
+        root.addView(export);
 
         LinearLayout actions = new LinearLayout(this);
         actions.setGravity(Gravity.END);
@@ -158,6 +185,11 @@ public final class SettingsActivity extends Activity {
         refreshSpinner.setSelection(refreshIndex(current.weatherRefreshMinutes));
         hostEdit.setText(current.weatherHost);
         keyEdit.setText(current.weatherKey);
+        confirmExitCheck.setChecked(current.confirmExit);
+        nightDimCheck.setChecked(current.nightDimEnabled);
+        indoorCheck.setChecked(current.indoorEnabled);
+        indoorEndpointEdit.setText(current.indoorEndpoint);
+        indoorTokenEdit.setText(current.indoorToken);
         backupValue.setText(backupPackage.length() == 0 ? getString(R.string.not_set) : backupPackage);
     }
 
@@ -180,7 +212,12 @@ public final class SettingsActivity extends Activity {
                 current.longitude,
                 hostEdit.getText().toString().trim(),
                 keyEdit.getText().toString().trim(),
-                backupPackage);
+                backupPackage,
+                confirmExitCheck.isChecked(),
+                nightDimCheck.isChecked(),
+                indoorCheck.isChecked(),
+                indoorEndpointEdit.getText().toString().trim(),
+                indoorTokenEdit.getText().toString().trim());
         store.saveSettings(settings);
         Toast.makeText(this, R.string.settings_saved, Toast.LENGTH_SHORT).show();
         finish();
@@ -225,16 +262,49 @@ public final class SettingsActivity extends Activity {
                 .show();
     }
 
+    private void exportLogs() {
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("text/plain");
+        intent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.settings_recent_errors));
+        intent.putExtra(Intent.EXTRA_TEXT, store.errorSummary());
+        startActivity(Intent.createChooser(intent, getString(R.string.settings_export_logs)));
+    }
+
     private Spinner spinner(String[] values) {
         Spinner spinner = new Spinner(this);
-        spinner.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, values));
+        spinner.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, values) {
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                View view = super.getView(position, convertView, parent);
+                styleSpinnerView(view);
+                return view;
+            }
+
+            @Override
+            public View getDropDownView(int position, View convertView, ViewGroup parent) {
+                View view = super.getDropDownView(position, convertView, parent);
+                styleSpinnerView(view);
+                return view;
+            }
+        });
+        spinner.setBackgroundColor(palette.panel);
         return spinner;
+    }
+
+    private void styleSpinnerView(View view) {
+        view.setBackgroundColor(palette.panel);
+        if (view instanceof TextView) {
+            TextView textView = (TextView) view;
+            textView.setTextColor(palette.primary);
+            textView.setTextSize(16);
+        }
     }
 
     private CheckBox check(String label) {
         CheckBox checkBox = new CheckBox(this);
         checkBox.setText(label);
         checkBox.setTextSize(16);
+        checkBox.setTextColor(palette.primary);
         checkBox.setPadding(0, dp(4), 0, dp(4));
         return checkBox;
     }
@@ -242,6 +312,8 @@ public final class SettingsActivity extends Activity {
     private EditText edit(String hint) {
         EditText editText = new EditText(this);
         editText.setHint(hint);
+        editText.setTextColor(palette.primary);
+        editText.setHintTextColor(palette.muted);
         editText.setSingleLine(true);
         return editText;
     }
@@ -249,6 +321,7 @@ public final class SettingsActivity extends Activity {
     private Button button(String label) {
         Button button = new Button(this);
         button.setText(label);
+        button.setTextColor(palette.primary);
         return button;
     }
 
@@ -262,6 +335,7 @@ public final class SettingsActivity extends Activity {
         TextView view = new TextView(this);
         view.setText(value);
         view.setTextSize(size);
+        view.setTextColor(bold ? palette.primary : palette.secondary);
         if (bold) {
             view.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
         }
