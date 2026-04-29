@@ -167,8 +167,12 @@ public final class PreferencesStore {
             if (forecast.isEmpty()) {
                 return WeatherSnapshot.fallback(settings.displayCity());
             }
+            String city = json.optString("city", settings.displayCity());
+            if (!city.equals(settings.displayCity())) {
+                return WeatherSnapshot.fallback(settings.displayCity());
+            }
             return new WeatherSnapshot(
-                    json.optString("city", settings.displayCity()),
+                    city,
                     json.optString("condition", "多云"),
                     json.optInt("temperature", 26),
                     json.optInt("humidity", 64),

@@ -71,6 +71,15 @@ public final class SettingsActivity extends Activity {
         bindCurrent();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        current = store.getSettings();
+        if (cityValue != null) {
+            cityValue.setText(ChineseText.display(this, current.displayCity()));
+        }
+    }
+
     private View buildContent() {
         ScrollView scrollView = new ScrollView(this);
         scrollView.setBackgroundColor(palette.background);
@@ -194,6 +203,7 @@ public final class SettingsActivity extends Activity {
     }
 
     private void save() {
+        current = store.getSettings();
         AppSettings settings = new AppSettings(
                 themeValue(themeSpinner.getSelectedItemPosition()),
                 secondsCheck.isChecked(),

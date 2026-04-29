@@ -65,16 +65,16 @@ public class MainActivity extends Activity implements DashboardView.Listener {
         visibleMonth = Calendar.getInstance();
         loadState();
         refreshDashboard();
-        refreshWeatherIfNeeded(false);
-        refreshIndoorIfNeeded(false);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        AppSettings previous = settings;
         loadState();
         refreshDashboard();
-        refreshIndoorIfNeeded(false);
+        refreshWeatherIfNeeded(weatherSettingsChanged(previous, settings, weather));
+        refreshIndoorIfNeeded(indoorSettingsChanged(previous, settings, indoor));
         handler.removeCallbacks(tick);
         handler.post(tick);
     }
@@ -196,6 +196,24 @@ public class MainActivity extends Activity implements DashboardView.Listener {
         dashboardView.showMessage(getString(R.string.weather_failed_cache));
     }
 
+    private boolean weatherSettingsChanged(AppSettings previous, AppSettings next, WeatherSnapshot snapshot) {
+        if (snapshot == null || snapshot.updatedAtMillis == 0L) {
+            return false;
+        }
+        if (!same(snapshot.city, next.displayCity())) {
+            return true;
+        }
+        if (previous == null) {
+            return false;
+        }
+        return !same(previous.cityName, next.cityName)
+                || !same(previous.districtName, next.districtName)
+                || previous.latitude != next.latitude
+                || previous.longitude != next.longitude
+                || !same(previous.weatherHost, next.weatherHost)
+                || !same(previous.weatherKey, next.weatherKey);
+    }
+
     private void refreshIndoorIfNeeded(boolean force) {
         if (!settings.indoorEnabled) {
             indoor = IndoorSnapshot.empty();
@@ -221,6 +239,28 @@ public class MainActivity extends Activity implements DashboardView.Listener {
         store.recordError("Sensor", message);
         indoor = store.readIndoor();
         refreshDashboard();
+    }
+
+    private boolean indoorSettingsChanged(AppSettings previous, AppSettings next, IndoorSnapshot snapshot) {
+        if (snapshot == null || snapshot.updatedAtMillis == 0L) {
+            return false;
+        }
+        if (previous == null) {
+            return false;
+        }
+        return previous.indoorEnabled != next.indoorEnabled
+                || !same(previous.indoorEndpoint, next.indoorEndpoint)
+                || !same(previous.indoorToken, next.indoorToken);
+    }
+
+    private static boolean same(String left, String right) {
+        if (left == null) {
+            return right == null || right.length() == 0;
+        }
+        if (right == null) {
+            return left.length() == 0;
+        }
+        return left.equals(right);
     }
 
     private void applyNightDim() {

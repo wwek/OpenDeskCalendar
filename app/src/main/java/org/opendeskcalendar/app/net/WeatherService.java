@@ -22,12 +22,16 @@ public final class WeatherService {
     public WeatherSnapshot fetch(AppSettings settings) throws Exception {
         String endpoint = buildForecastUrl(settings);
         HttpURLConnection connection = open(endpoint);
-        int code = connection.getResponseCode();
-        if (code < 200 || code >= 300) {
-            throw new IOException("天气接口失败，HTTP " + code);
+        try {
+            int code = connection.getResponseCode();
+            if (code < 200 || code >= 300) {
+                throw new IOException("天气接口失败，HTTP " + code);
+            }
+            String raw = readAll(connection.getInputStream());
+            return parseForecast(raw, settings);
+        } finally {
+            connection.disconnect();
         }
-        String raw = readAll(connection.getInputStream());
-        return parseForecast(raw, settings);
     }
 
     public List<CityResult> searchCities(String query) throws Exception {
@@ -40,26 +44,30 @@ public final class WeatherService {
                 .build()
                 .toString();
         HttpURLConnection connection = open(endpoint);
-        int code = connection.getResponseCode();
-        if (code < 200 || code >= 300) {
-            throw new IOException("城市搜索失败，HTTP " + code);
-        }
-        JSONObject root = new JSONObject(readAll(connection.getInputStream()));
-        JSONArray results = root.optJSONArray("results");
-        ArrayList<CityResult> cities = new ArrayList<CityResult>();
-        if (results == null) {
+        try {
+            int code = connection.getResponseCode();
+            if (code < 200 || code >= 300) {
+                throw new IOException("城市搜索失败，HTTP " + code);
+            }
+            JSONObject root = new JSONObject(readAll(connection.getInputStream()));
+            JSONArray results = root.optJSONArray("results");
+            ArrayList<CityResult> cities = new ArrayList<CityResult>();
+            if (results == null) {
+                return cities;
+            }
+            for (int i = 0; i < results.length(); i++) {
+                JSONObject item = results.getJSONObject(i);
+                cities.add(new CityResult(
+                        item.optString("name"),
+                        item.optString("admin1"),
+                        item.optString("country"),
+                        item.optDouble("latitude"),
+                        item.optDouble("longitude")));
+            }
             return cities;
+        } finally {
+            connection.disconnect();
         }
-        for (int i = 0; i < results.length(); i++) {
-            JSONObject item = results.getJSONObject(i);
-            cities.add(new CityResult(
-                    item.optString("name"),
-                    item.optString("admin1"),
-                    item.optString("country"),
-                    item.optDouble("latitude"),
-                    item.optDouble("longitude")));
-        }
-        return cities;
     }
 
     private String buildForecastUrl(AppSettings settings) {
