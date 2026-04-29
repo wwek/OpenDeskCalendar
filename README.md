@@ -7,14 +7,14 @@
 <p align="center">
   <a href="https://github.com/wwek/OpenDeskCalendar/actions/workflows/android-build.yml"><img src="https://img.shields.io/github/actions/workflow/status/wwek/OpenDeskCalendar/android-build.yml?branch=main&label=Android%20Build" alt="Android Build"></a>
   <img src="https://img.shields.io/badge/Android-4.1%2B%20(API%2016%2B)-2563eb" alt="Android 4.1+ API 16+">
-  <img src="https://img.shields.io/badge/version-0.1.0--alpha-0f766e" alt="version 0.1.0-alpha">
+  <img src="https://img.shields.io/badge/version-0.1.1--alpha-0f766e" alt="version 0.1.1-alpha">
   <img src="https://img.shields.io/badge/language-Java-f59e0b" alt="Java">
   <img src="https://img.shields.io/badge/license-Apache--2.0-111827" alt="Apache-2.0">
 </p>
 
 OpenDeskCalendar 是一个面向旧手机、旧平板和 Android 电纸书设备的开源桌面日历天气屏。
 
-当前仓库已经实现 `v0.1.0-alpha` 原生 Android 版本，需求来源见 `docs/open_desk_calendar_prd.md`。
+当前仓库已经实现 `v0.1.1-alpha` 原生 Android 版本，需求来源见 `docs/open_desk_calendar_prd.md`。
 
 ## 当前范围
 
