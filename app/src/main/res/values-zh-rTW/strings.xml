@@ -64,6 +64,8 @@
     <string name="settings_section_diagnostics">診斷</string>
     <string name="settings_recent_errors">查看最近錯誤</string>
     <string name="settings_export_logs">匯出診斷日誌</string>
+    <string name="settings_section_about">關於</string>
+    <string name="settings_version">版本</string>
     <string name="settings_saved">設定已儲存</string>
     <string name="home_guide_title">Home 桌面模式</string>
     <string name="home_guide_message">系統會在桌面選擇器裡列出 Open Desk Calendar。請手動選擇本應用作為預設桌面。\n\n防鎖死入口：長按時間進入設定，長按右上角 Wi-Fi 開啟系統入口。</string>

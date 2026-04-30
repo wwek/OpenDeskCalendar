@@ -215,6 +215,9 @@ public final class SettingsActivity extends Activity {
         export.setOnClickListener(v -> exportLogs());
         root.addView(export);
 
+        root.addView(section(getString(R.string.settings_section_about)));
+        root.addView(row(getString(R.string.settings_version), text(appVersionText(), 15, false)));
+
         LinearLayout actions = new LinearLayout(this);
         actions.setGravity(Gravity.END);
         actions.setPadding(0, dp(20), 0, dp(8));
@@ -362,6 +365,10 @@ public final class SettingsActivity extends Activity {
         intent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.settings_recent_errors));
         intent.putExtra(Intent.EXTRA_TEXT, store.errorSummary());
         startActivity(Intent.createChooser(intent, getString(R.string.settings_export_logs)));
+    }
+
+    private String appVersionText() {
+        return BuildConfig.VERSION_NAME + " (" + BuildConfig.VERSION_CODE + ")";
     }
 
     private void pasteInto(EditText target) {
