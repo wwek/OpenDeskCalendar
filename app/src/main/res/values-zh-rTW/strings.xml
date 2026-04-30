@@ -81,6 +81,7 @@
     <string name="dashboard_indoor">室內</string>
     <string name="dashboard_cache">快取</string>
     <string name="dashboard_forecast_title">未來三天天氣</string>
+    <string name="almanac_title">今日宜忌</string>
     <string name="dashboard_cached_at">快取於 %1$s</string>
     <string name="dashboard_updated_at">更新於 %1$s</string>
     <string name="dashboard_good_avoid">宜：%1$s   忌：%2$s</string>

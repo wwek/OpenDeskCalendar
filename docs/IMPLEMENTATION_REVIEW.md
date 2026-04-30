@@ -18,7 +18,7 @@ Implemented:
 Partially implemented:
 
 - Custom weather Host/Key is supported as a direct Open-Meteo-compatible endpoint, but custom field mapping is not yet implemented.
-- Almanac data is a deterministic local placeholder and needs an audited licensed data source before being treated as product data.
+- Almanac data is generated from the MIT-licensed OPN48/cnlunar project for packaged years, with the old deterministic placeholder kept as fallback when a year asset is missing.
 - Indoor temperature/humidity is implemented for HTTP and Home Assistant-style JSON endpoints, with optional Bearer token and local cache.
 - Holiday data online update is not implemented.
 - Direct MQTT client support, multi-city carousel, weather warnings, and AQI are not implemented.
