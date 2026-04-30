@@ -100,6 +100,14 @@ app/build/outputs/apk/release/app-release.apk
 
 签名配置不会提交到仓库。脚本会把 keystore 放在 `.local/signing/`，并把密码写入已忽略的 `local.properties`。请备份 keystore 和对应密码；丢失后将无法用同一签名身份更新已安装的 release APK。
 
+本地直接构建带签名 APK 只需要：
+
+```sh
+./scripts/build-release.sh
+```
+
+首次运行时如果没有签名配置，脚本会自动创建本机 keystore；之后会复用同一签名。
+
 CI 或其他机器也可以用环境变量提供签名配置：
 
 ```sh
@@ -124,7 +132,31 @@ OPEN_DESK_CALENDAR_KEY_ALIAS
 OPEN_DESK_CALENDAR_KEY_PASSWORD
 ```
 
-PR 和 `main` 分支会构建 debug APK。手动触发 workflow 或推送 `v*` tag 时会用这些 secrets 构建签名 release APK，并上传为 workflow artifact。
+也可以用脚本把本机签名配置写入 GitHub Actions secrets：
+
+```sh
+gh auth login
+./scripts/configure-github-release-secrets.sh
+```
+
+PR 和 `main` 分支会构建 debug APK。推送 `v*` tag 时会用这些 secrets 构建签名 release APK，上传 workflow artifact，并创建 / 更新 GitHub Release，附加 `OpenDeskCalendar-vX.Y.Z.apk`。
+
+一键发布新版本：
+
+```sh
+./scripts/release-tag.sh 0.1.2-alpha
+```
+
+这个脚本会：
+
+1. 要求工作区干净。
+2. 更新 `versionCode`、`versionName` 和 README 徽标。
+3. 提交版本变更。
+4. 本机构建并校验签名 APK。
+5. 创建 `v0.1.2-alpha` tag。
+6. 推送当前分支和 tag，触发 GitHub Actions 自动构建签名包并发布 Release。
+
+Tag 必须指向已提交的代码，所以实际顺序是“先提交，再打 tag，再 push”。脚本已经按这个顺序处理。
 
 ## 运行说明
 
