@@ -16,6 +16,14 @@ OpenDeskCalendar 是一个面向旧手机、旧平板和 Android 电纸书设备
 
 当前仓库已经实现 `v0.1.1-alpha` 原生 Android 版本，需求来源见 `docs/open_desk_calendar_prd.md`。
 
+## 界面预览
+
+亮色、暗色、黑白、电纸书主题均支持竖屏和横屏。
+
+<p align="center">
+  <img src="docs/assets/readme-showcase.png" alt="OpenDeskCalendar 主题与横竖屏截图拼图">
+</p>
+
 ## 当前范围
 
 本 alpha 已实现：
@@ -166,7 +174,7 @@ Tag 必须指向已提交的代码，所以实际顺序是“先提交，再打 
 ## 数据来源
 
 - 天气：Open-Meteo 公共 API，或用户配置的和风天气 API。
-- 宜忌：基于 MIT 许可的 cnlunar 离线数据，不构成建议。
+- 宜忌：基于 MIT 许可的 cnlunar 离线数据，覆盖 2026-2099，不构成建议。
 
 ## 许可证
 

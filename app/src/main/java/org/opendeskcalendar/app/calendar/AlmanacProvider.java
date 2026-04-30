@@ -14,6 +14,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.GZIPInputStream;
 
 public final class AlmanacProvider {
     private static final String[] GOOD = {
@@ -90,47 +91,48 @@ public final class AlmanacProvider {
     }
 
     private static AlmanacDay findDay(Context context, Calendar calendar) {
-        Map<String, AlmanacDay> year = YearCache.get(context, calendar.get(Calendar.YEAR));
-        if (year == null) {
+        Map<String, AlmanacDay> days = AlmanacCache.get(context);
+        if (days == null) {
             return null;
         }
         String key = calendar.get(Calendar.YEAR)
                 + "-" + two(calendar.get(Calendar.MONTH) + 1)
                 + "-" + two(calendar.get(Calendar.DAY_OF_MONTH));
-        return year.get(key);
+        return days.get(key);
     }
 
     private static String two(int value) {
         return value < 10 ? "0" + value : String.valueOf(value);
     }
 
-    private static final class YearCache {
-        private static final Map<Integer, Map<String, AlmanacDay>> YEARS = new HashMap<Integer, Map<String, AlmanacDay>>();
-        private static final Map<Integer, Boolean> MISSING = new HashMap<Integer, Boolean>();
+    private static final class AlmanacCache {
+        private static Map<String, AlmanacDay> days;
+        private static boolean missing;
 
-        private YearCache() {
+        private AlmanacCache() {
         }
 
-        static synchronized Map<String, AlmanacDay> get(Context context, int year) {
-            if (YEARS.containsKey(year)) {
-                return YEARS.get(year);
+        static synchronized Map<String, AlmanacDay> get(Context context) {
+            if (days != null) {
+                return days;
             }
-            if (MISSING.containsKey(year)) {
+            if (missing) {
                 return null;
             }
             try {
-                Map<String, AlmanacDay> data = load(context, year);
-                YEARS.put(year, data);
-                return data;
+                days = load(context);
+                return days;
             } catch (Exception e) {
-                MISSING.put(year, true);
+                missing = true;
                 return null;
             }
         }
 
-        private static Map<String, AlmanacDay> load(Context context, int year) throws Exception {
-            String raw = readAll(context.getAssets().open("almanac/cn-" + year + ".json"));
+        private static Map<String, AlmanacDay> load(Context context) throws Exception {
+            InputStream stream = new GZIPInputStream(context.getAssets().open("almanac/cn-2026-2099.dat"));
+            String raw = readAll(stream);
             JSONObject root = new JSONObject(raw);
+            JSONArray terms = root.getJSONArray("terms");
             JSONObject items = root.getJSONObject("items");
             HashMap<String, AlmanacDay> data = new HashMap<String, AlmanacDay>();
             JSONArray names = items.names();
@@ -139,8 +141,8 @@ public final class AlmanacProvider {
             }
             for (int i = 0; i < names.length(); i++) {
                 String date = names.getString(i);
-                JSONObject item = items.getJSONObject(date);
-                data.put(date, new AlmanacDay(readArray(item.getJSONArray("good")), readArray(item.getJSONArray("avoid"))));
+                JSONArray item = items.getJSONArray(date);
+                data.put(date, new AlmanacDay(readIndexedArray(item.getJSONArray(0), terms), readIndexedArray(item.getJSONArray(1), terms)));
             }
             return data;
         }
@@ -156,10 +158,10 @@ public final class AlmanacProvider {
             return builder.toString();
         }
 
-        private static List<String> readArray(JSONArray array) throws Exception {
+        private static List<String> readIndexedArray(JSONArray array, JSONArray terms) throws Exception {
             ArrayList<String> values = new ArrayList<String>();
             for (int i = 0; i < array.length(); i++) {
-                values.add(array.getString(i));
+                values.add(terms.getString(array.getInt(i)));
             }
             return values;
         }

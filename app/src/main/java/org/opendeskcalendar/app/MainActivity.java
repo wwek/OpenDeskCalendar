@@ -40,6 +40,7 @@ public class MainActivity extends Activity implements DashboardView.Listener {
     private WeatherSnapshot weather;
     private IndoorSnapshot indoor;
     private Calendar visibleMonth;
+    private Calendar selectedDate;
     private boolean launchedBackupByTap;
 
     private final Runnable tick = new Runnable() {
@@ -49,6 +50,12 @@ public class MainActivity extends Activity implements DashboardView.Listener {
             refreshDashboard();
             long delay = settings != null && settings.showSeconds && !settings.isEink() ? 1000L : 60000L;
             handler.postDelayed(this, delay);
+        }
+    };
+    private final Runnable deferredDashboardRefresh = new Runnable() {
+        @Override
+        public void run() {
+            refreshDashboard();
         }
     };
 
@@ -63,6 +70,7 @@ public class MainActivity extends Activity implements DashboardView.Listener {
         dashboardView.setListener(this);
         setContentView(dashboardView);
         visibleMonth = Calendar.getInstance();
+        selectedDate = Calendar.getInstance();
         loadState();
         refreshDashboard();
     }
@@ -77,12 +85,14 @@ public class MainActivity extends Activity implements DashboardView.Listener {
         refreshIndoorIfNeeded(indoorSettingsChanged(previous, settings, indoor));
         handler.removeCallbacks(tick);
         handler.post(tick);
+        handler.postDelayed(deferredDashboardRefresh, 600L);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         handler.removeCallbacks(tick);
+        handler.removeCallbacks(deferredDashboardRefresh);
     }
 
     @Override
@@ -126,6 +136,7 @@ public class MainActivity extends Activity implements DashboardView.Listener {
     @Override
     public void onGoToToday() {
         visibleMonth = Calendar.getInstance();
+        selectedDate = Calendar.getInstance();
         refreshDashboard();
     }
 
@@ -143,10 +154,12 @@ public class MainActivity extends Activity implements DashboardView.Listener {
 
     @Override
     public void onDateSelected(CalendarDay day) {
+        selectedDate = dateFrom(day);
         String message = day.dateKey + "  " + ChineseText.display(this, day.lunarLabel);
         if (day.holiday != null) {
             message += "  " + ChineseText.display(this, day.holiday.badge + day.holiday.label);
         }
+        refreshDashboard();
         dashboardView.showMessage(message);
     }
 
@@ -167,7 +180,19 @@ public class MainActivity extends Activity implements DashboardView.Listener {
             return;
         }
         MonthGrid month = calendarRepository.buildMonth(visibleMonth, settings);
-        dashboardView.update(settings, weather, indoor, month, NetworkState.from(this));
+        dashboardView.update(settings, weather, indoor, month, NetworkState.from(this), selectedDate);
+    }
+
+    private static Calendar dateFrom(CalendarDay day) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.YEAR, day.year);
+        calendar.set(Calendar.MONTH, day.month - 1);
+        calendar.set(Calendar.DAY_OF_MONTH, day.day);
+        calendar.set(Calendar.HOUR_OF_DAY, 12);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        return calendar;
     }
 
     private void refreshWeatherIfNeeded(boolean force) {

@@ -58,6 +58,7 @@ public final class DashboardView extends FrameLayout {
     private IndoorSnapshot indoor;
     private MonthGrid month;
     private NetworkState networkState;
+    private Calendar selectedDate;
     private TextView messageView;
     private String transientMessage = "";
     private long transientUntil = 0L;
@@ -90,13 +91,14 @@ public final class DashboardView extends FrameLayout {
         this.listener = listener;
     }
 
-    public void update(AppSettings settings, WeatherSnapshot weather, IndoorSnapshot indoor, MonthGrid month, NetworkState networkState) {
+    public void update(AppSettings settings, WeatherSnapshot weather, IndoorSnapshot indoor, MonthGrid month, NetworkState networkState, Calendar selectedDate) {
         this.settings = settings;
         this.palette = ThemePalette.from(settings);
         this.weather = weather;
         this.indoor = indoor;
         this.month = month;
         this.networkState = networkState;
+        this.selectedDate = copyDate(selectedDate == null ? Calendar.getInstance() : selectedDate);
         buildLayout();
     }
 
@@ -518,7 +520,7 @@ public final class DashboardView extends FrameLayout {
         LinearLayout section = vertical();
         section.setPadding(dp(14), compact ? dp(6) : dp(12), dp(14), compact ? dp(6) : dp(12));
 
-        Calendar now = Calendar.getInstance();
+        Calendar now = almanacDate();
         ChineseLunarCalendar.LunarDate lunar = ChineseLunarCalendar.fromSolar(
                 now.get(Calendar.YEAR), now.get(Calendar.MONTH) + 1, now.get(Calendar.DAY_OF_MONTH));
         String lunarHeader = localize(lunar.monthName + lunar.dayName + "  " + ChineseLunarCalendar.ganzhiAnimal(lunar));
@@ -662,7 +664,7 @@ public final class DashboardView extends FrameLayout {
         section.setGravity(Gravity.CENTER_VERTICAL);
         section.setPadding(dp(14), 0, dp(14), dp(6));
         bindAlmanacDetails(section);
-        Calendar now = Calendar.getInstance();
+        Calendar now = almanacDate();
         TextView good = label(localize("宜：") + localize(AlmanacProvider.good(getContext(), now)), 11, palette.secondary, false);
         good.setGravity(Gravity.CENTER_VERTICAL);
         good.setSingleLine(true);
@@ -684,7 +686,7 @@ public final class DashboardView extends FrameLayout {
 
         if (compact && settings.showAlmanac) {
             bindAlmanacDetails(section);
-            Calendar now = Calendar.getInstance();
+            Calendar now = almanacDate();
             TextView good = label(localize("宜：") + localize(AlmanacProvider.good(getContext(), now)), 11, palette.secondary, false);
             good.setSingleLine(true);
             good.setEllipsize(TextUtils.TruncateAt.END);
@@ -703,7 +705,7 @@ public final class DashboardView extends FrameLayout {
         section.addView(updatedAt, new LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT, compact ? 0f : 0.35f));
 
         if (settings.showAlmanac) {
-            Calendar now = Calendar.getInstance();
+            Calendar now = almanacDate();
             String almanac = getResources().getString(
                     R.string.dashboard_good_avoid,
                     localize(AlmanacProvider.good(getContext(), now)),
@@ -736,7 +738,7 @@ public final class DashboardView extends FrameLayout {
     }
 
     private void showAlmanacDetails() {
-        Calendar now = Calendar.getInstance();
+        Calendar now = almanacDate();
         LinearLayout content = vertical();
         content.setPadding(dp(18), dp(14), dp(18), dp(14));
         content.setBackgroundColor(palette.background);
@@ -762,10 +764,46 @@ public final class DashboardView extends FrameLayout {
         scroll.setBackgroundColor(palette.background);
         scroll.addView(content);
         new AlertDialog.Builder(getContext())
-                .setTitle(R.string.almanac_title)
+                .setTitle(getResources().getString(R.string.almanac_selected_title, selectedDateKey()))
                 .setView(scroll)
                 .setPositiveButton(R.string.close, null)
                 .show();
+    }
+
+    private Calendar almanacDate() {
+        return selectedDate == null ? Calendar.getInstance() : copyDate(selectedDate);
+    }
+
+    private Calendar copyDate(Calendar source) {
+        Calendar copy = Calendar.getInstance();
+        copy.set(Calendar.YEAR, source.get(Calendar.YEAR));
+        copy.set(Calendar.MONTH, source.get(Calendar.MONTH));
+        copy.set(Calendar.DAY_OF_MONTH, source.get(Calendar.DAY_OF_MONTH));
+        copy.set(Calendar.HOUR_OF_DAY, 12);
+        copy.set(Calendar.MINUTE, 0);
+        copy.set(Calendar.SECOND, 0);
+        copy.set(Calendar.MILLISECOND, 0);
+        return copy;
+    }
+
+    private String selectedDateKey() {
+        Calendar date = almanacDate();
+        return date.get(Calendar.YEAR)
+                + "-" + two(date.get(Calendar.MONTH) + 1)
+                + "-" + two(date.get(Calendar.DAY_OF_MONTH));
+    }
+
+    private boolean isSelected(CalendarDay day) {
+        if (selectedDate == null) {
+            return day.today;
+        }
+        return day.year == selectedDate.get(Calendar.YEAR)
+                && day.month == selectedDate.get(Calendar.MONTH) + 1
+                && day.day == selectedDate.get(Calendar.DAY_OF_MONTH);
+    }
+
+    private String two(int value) {
+        return value < 10 ? "0" + value : String.valueOf(value);
     }
 
     private String updateText() {
@@ -799,14 +837,20 @@ public final class DashboardView extends FrameLayout {
 
     private GradientDrawable dayBackground(CalendarDay day) {
         GradientDrawable background = new GradientDrawable();
-        if (day.today && !settings.isMonochrome()) {
+        boolean selected = isSelected(day);
+        if (selected && !settings.isMonochrome()) {
             background.setColor(Color.argb(200, Color.red(palette.todayFill), Color.green(palette.todayFill), Color.blue(palette.todayFill)));
         } else {
             background.setColor(Color.TRANSPARENT);
         }
         background.setCornerRadius(dp(8));
-        if (day.today && settings.isMonochrome()) {
-            background.setStroke(dp(1), palette.primary);
+        if (selected && settings.isMonochrome()) {
+            background.setStroke(dp(2), palette.primary);
+        } else if (day.today && !selected) {
+            int borderColor = settings.isMonochrome()
+                    ? palette.secondary
+                    : Color.argb(130, Color.red(palette.muted), Color.green(palette.muted), Color.blue(palette.muted));
+            background.setStroke(dp(1), borderColor);
         }
         return background;
     }
@@ -815,7 +859,7 @@ public final class DashboardView extends FrameLayout {
         if (!day.inMonth) {
             return palette.muted;
         }
-        if (day.today && !settings.isMonochrome()) {
+        if ((day.today || isSelected(day)) && !settings.isMonochrome()) {
             return palette.accentSecondary;
         }
         if (day.holiday != null && day.holiday.isHoliday() && !settings.isMonochrome()) {

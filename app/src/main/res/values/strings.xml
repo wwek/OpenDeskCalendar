@@ -82,6 +82,7 @@
     <string name="dashboard_cache">缓存</string>
     <string name="dashboard_forecast_title">未来三天天气</string>
     <string name="almanac_title">今日宜忌</string>
+    <string name="almanac_selected_title">%1$s 宜忌</string>
     <string name="dashboard_cached_at">缓存于 %1$s</string>
     <string name="dashboard_updated_at">更新于 %1$s</string>
     <string name="dashboard_good_avoid">宜：%1$s   忌：%2$s</string>
