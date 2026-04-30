@@ -51,7 +51,7 @@ public class MainActivity extends Activity implements DashboardView.Listener {
         public void run() {
             applyNightDim();
             refreshDashboard();
-            long delay = settings != null && settings.showSeconds && !settings.isEink() ? 1000L : 60000L;
+            long delay = settings != null && settings.showSeconds ? 1000L : 60000L;
             handler.postDelayed(this, delay);
         }
     };

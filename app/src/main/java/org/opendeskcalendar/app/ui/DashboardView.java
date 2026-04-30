@@ -50,8 +50,9 @@ public final class DashboardView extends FrameLayout {
     private final Handler handler = new Handler();
     private final GestureDetector gestures;
     private final SimpleDateFormat time24Format = new SimpleDateFormat("HH:mm", Locale.CHINA);
+    private final SimpleDateFormat time24WithSecondsFormat = new SimpleDateFormat("HH:mm:ss", Locale.CHINA);
     private final SimpleDateFormat time12Format = new SimpleDateFormat("hh:mm", Locale.CHINA);
-    private final SimpleDateFormat secondFormat = new SimpleDateFormat(":ss", Locale.CHINA);
+    private final SimpleDateFormat time12WithSecondsFormat = new SimpleDateFormat("hh:mm:ss", Locale.CHINA);
     private final SimpleDateFormat amPmFormat = new SimpleDateFormat("a", Locale.CHINA);
     private final SimpleDateFormat updateFormat = new SimpleDateFormat("HH:mm", Locale.CHINA);
     private Listener listener;
@@ -341,20 +342,17 @@ public final class DashboardView extends FrameLayout {
 
         LinearLayout row = horizontal();
         row.setGravity(Gravity.CENTER | Gravity.BOTTOM);
-        String main = settings.use24Hour ? time24Format.format(now.getTime()) : time12Format.format(now.getTime());
+        String main;
+        if (settings.use24Hour) {
+            main = settings.showSeconds ? time24WithSecondsFormat.format(now.getTime()) : time24Format.format(now.getTime());
+        } else {
+            main = settings.showSeconds ? time12WithSecondsFormat.format(now.getTime()) : time12Format.format(now.getTime());
+        }
         TextView time = label(main, compact ? 68 : 54, palette.primary, true);
         time.setIncludeFontPadding(false);
         time.setSingleLine(true);
         row.addView(time, new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
 
-        if (settings.showSeconds && !settings.isEink()) {
-            TextView seconds = label(secondFormat.format(now.getTime()), compact ? 23 : 20, palette.secondary, false);
-            seconds.setIncludeFontPadding(false);
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-            params.leftMargin = dp(6);
-            params.bottomMargin = compact ? dp(5) : dp(8);
-            row.addView(seconds, params);
-        }
         if (!settings.use24Hour) {
             TextView suffix = label(amPmFormat.format(now.getTime()), compact ? 16 : 16, palette.secondary, false);
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);

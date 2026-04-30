@@ -63,7 +63,7 @@ public final class PreferencesStore {
         boolean eink = AppSettings.THEME_EINK.equals(theme);
         return new AppSettings(
                 theme,
-                preferences.getBoolean(KEY_SHOW_SECONDS, !eink),
+                preferences.getBoolean(KEY_SHOW_SECONDS, true),
                 preferences.getBoolean(KEY_USE_24H, true),
                 preferences.getBoolean(KEY_WEEK_MONDAY, false),
                 preferences.getBoolean(KEY_KEEP_ON, true),
