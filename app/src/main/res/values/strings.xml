@@ -6,10 +6,12 @@
     <string name="done">完成</string>
     <string name="cancel">取消</string>
     <string name="save">保存</string>
+    <string name="paste">粘贴</string>
     <string name="modify">修改</string>
     <string name="choose">选择</string>
     <string name="not_set">未设置</string>
     <string name="unknown_error">未知错误</string>
+    <string name="clipboard_empty">剪贴板为空</string>
 
     <string name="settings_section_appearance">外观</string>
     <string name="settings_theme">主题</string>

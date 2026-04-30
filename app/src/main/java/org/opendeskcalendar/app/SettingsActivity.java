@@ -2,6 +2,9 @@ package org.opendeskcalendar.app;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -129,10 +132,14 @@ public final class SettingsActivity extends Activity {
         providerSpinner = spinner(getResources().getStringArray(R.array.weather_provider_names));
         root.addView(row(getString(R.string.settings_weather_provider), providerSpinner));
         hostEdit = edit(getString(R.string.settings_host_hint));
-        root.addView(row(getString(R.string.settings_weather_base_api), hostEdit));
+        Button pasteHost = button(getString(R.string.paste));
+        pasteHost.setOnClickListener(v -> pasteInto(hostEdit));
+        root.addView(row(getString(R.string.settings_weather_base_api), hostEdit, pasteHost));
         keyEdit = edit(getString(R.string.settings_key_hint));
         keyEdit.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-        root.addView(row("Key", keyEdit));
+        Button pasteKey = button(getString(R.string.paste));
+        pasteKey.setOnClickListener(v -> pasteInto(keyEdit));
+        root.addView(row("Key", keyEdit, pasteKey));
         refreshSpinner = spinner(getResources().getStringArray(R.array.refresh_names));
         root.addView(row(getString(R.string.settings_refresh_rate), refreshSpinner));
 
@@ -325,6 +332,22 @@ public final class SettingsActivity extends Activity {
         intent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.settings_recent_errors));
         intent.putExtra(Intent.EXTRA_TEXT, store.errorSummary());
         startActivity(Intent.createChooser(intent, getString(R.string.settings_export_logs)));
+    }
+
+    private void pasteInto(EditText target) {
+        ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+        ClipData clip = clipboard == null ? null : clipboard.getPrimaryClip();
+        if (clip == null || clip.getItemCount() == 0) {
+            Toast.makeText(this, R.string.clipboard_empty, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        CharSequence value = clip.getItemAt(0).coerceToText(this);
+        if (value == null || value.toString().trim().length() == 0) {
+            Toast.makeText(this, R.string.clipboard_empty, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        target.setText(value.toString().trim());
+        target.setSelection(target.getText().length());
     }
 
     private Spinner spinner(String[] values) {
