@@ -154,7 +154,7 @@ public final class HourlyAnnouncer implements TextToSpeech.OnInitListener {
         playPromptTone();
         int queueMode = queueSpeechDelay() ? TextToSpeech.QUEUE_ADD : TextToSpeech.QUEUE_FLUSH;
         int result;
-        if (Build.VERSION.SDK_INT >= 23) {
+        if (Build.VERSION.SDK_INT >= 21) {
             Bundle params = new Bundle();
             result = textToSpeech.speak(text, queueMode, params, UTTERANCE_ID);
         } else {
@@ -207,7 +207,7 @@ public final class HourlyAnnouncer implements TextToSpeech.OnInitListener {
     }
 
     private AudioTrack createStreamingAudioTrack(int bufferSizeBytes) {
-        if (Build.VERSION.SDK_INT >= 21) {
+        if (Build.VERSION.SDK_INT >= 23) {
             AudioAttributes attributes = new AudioAttributes.Builder()
                     .setUsage(AudioAttributes.USAGE_MEDIA)
                     .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
