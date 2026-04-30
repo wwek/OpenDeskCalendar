@@ -10,6 +10,10 @@ public final class AppSettings {
     public static final String ORIENTATION_SYSTEM = "system";
     public static final String ORIENTATION_PORTRAIT = "portrait";
     public static final String ORIENTATION_LANDSCAPE = "landscape";
+    public static final String ANNOUNCEMENT_MODE_RECORDED = "recorded";
+    public static final String ANNOUNCEMENT_MODE_TTS = "tts";
+    public static final String ANNOUNCEMENT_VOICE_MALE = "male";
+    public static final String ANNOUNCEMENT_VOICE_FEMALE = "female";
 
     public final String theme;
     public final boolean showSeconds;
@@ -35,6 +39,8 @@ public final class AppSettings {
     public final boolean hourlyAnnouncementEnabled;
     public final boolean halfHourlyAnnouncementEnabled;
     public final boolean hourlyAnnouncementQuietNight;
+    public final String announcementMode;
+    public final String announcementVoice;
     public final boolean nightDimEnabled;
     public final boolean burnInProtectionEnabled;
     public final boolean indoorEnabled;
@@ -66,6 +72,8 @@ public final class AppSettings {
             boolean hourlyAnnouncementEnabled,
             boolean halfHourlyAnnouncementEnabled,
             boolean hourlyAnnouncementQuietNight,
+            String announcementMode,
+            String announcementVoice,
             boolean nightDimEnabled,
             boolean burnInProtectionEnabled,
             boolean indoorEnabled,
@@ -95,6 +103,8 @@ public final class AppSettings {
         this.hourlyAnnouncementEnabled = hourlyAnnouncementEnabled;
         this.halfHourlyAnnouncementEnabled = halfHourlyAnnouncementEnabled;
         this.hourlyAnnouncementQuietNight = hourlyAnnouncementQuietNight;
+        this.announcementMode = announcementMode;
+        this.announcementVoice = announcementVoice;
         this.nightDimEnabled = nightDimEnabled;
         this.burnInProtectionEnabled = burnInProtectionEnabled;
         this.indoorEnabled = indoorEnabled;

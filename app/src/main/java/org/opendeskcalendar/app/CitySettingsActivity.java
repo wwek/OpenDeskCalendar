@@ -174,6 +174,8 @@ public final class CitySettingsActivity extends Activity {
                 current.hourlyAnnouncementEnabled,
                 current.halfHourlyAnnouncementEnabled,
                 current.hourlyAnnouncementQuietNight,
+                current.announcementMode,
+                current.announcementVoice,
                 current.nightDimEnabled,
                 current.burnInProtectionEnabled,
                 current.indoorEnabled,

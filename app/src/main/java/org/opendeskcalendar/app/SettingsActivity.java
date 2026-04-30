@@ -46,6 +46,8 @@ public final class SettingsActivity extends Activity {
     private Spinner orientationSpinner;
     private Spinner refreshSpinner;
     private Spinner providerSpinner;
+    private Spinner announcementModeSpinner;
+    private Spinner announcementVoiceSpinner;
     private CheckBox secondsCheck;
     private CheckBox hour24Check;
     private CheckBox mondayCheck;
@@ -179,6 +181,8 @@ public final class SettingsActivity extends Activity {
         hourlyAnnouncementCheck = check(getString(R.string.settings_hourly_announcement));
         halfHourlyAnnouncementCheck = check(getString(R.string.settings_half_hourly_announcement));
         hourlyQuietNightCheck = check(getString(R.string.settings_hourly_quiet_night));
+        announcementModeSpinner = spinner(getResources().getStringArray(R.array.announcement_mode_names));
+        announcementVoiceSpinner = spinner(getResources().getStringArray(R.array.announcement_voice_names));
         nightDimCheck = check(getString(R.string.settings_night_dim));
         burnInCheck = check(getString(R.string.settings_burn_in_protection));
         confirmExitCheck = check(getString(R.string.settings_confirm_exit));
@@ -187,6 +191,8 @@ public final class SettingsActivity extends Activity {
         root.addView(hourlyAnnouncementCheck);
         root.addView(halfHourlyAnnouncementCheck);
         root.addView(hourlyQuietNightCheck);
+        root.addView(row(getString(R.string.settings_announcement_mode), announcementModeSpinner));
+        root.addView(row(getString(R.string.settings_announcement_voice), announcementVoiceSpinner));
         Button testHourlyAnnouncement = button(getString(R.string.settings_hourly_test));
         testHourlyAnnouncement.setOnClickListener(v -> testHourlyAnnouncement());
         root.addView(row(getString(R.string.settings_hourly_test_label), testHourlyAnnouncement));
@@ -243,6 +249,8 @@ public final class SettingsActivity extends Activity {
         hourlyAnnouncementCheck.setChecked(current.hourlyAnnouncementEnabled);
         halfHourlyAnnouncementCheck.setChecked(current.halfHourlyAnnouncementEnabled);
         hourlyQuietNightCheck.setChecked(current.hourlyAnnouncementQuietNight);
+        announcementModeSpinner.setSelection(announcementModeIndex(current.announcementMode));
+        announcementVoiceSpinner.setSelection(announcementVoiceIndex(current.announcementVoice));
         nightDimCheck.setChecked(current.nightDimEnabled);
         burnInCheck.setChecked(current.burnInProtectionEnabled);
         indoorCheck.setChecked(current.indoorEnabled);
@@ -278,6 +286,8 @@ public final class SettingsActivity extends Activity {
                 hourlyAnnouncementCheck.isChecked(),
                 halfHourlyAnnouncementCheck.isChecked(),
                 hourlyQuietNightCheck.isChecked(),
+                announcementModeValue(announcementModeSpinner.getSelectedItemPosition()),
+                announcementVoiceValue(announcementVoiceSpinner.getSelectedItemPosition()),
                 nightDimCheck.isChecked(),
                 burnInCheck.isChecked(),
                 indoorCheck.isChecked(),
@@ -300,7 +310,11 @@ public final class SettingsActivity extends Activity {
                 }
             }));
         }
-        hourlyAnnouncer.announceNow(java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY));
+        hourlyAnnouncer.announceNow(
+                java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY),
+                hour24Check.isChecked(),
+                announcementModeValue(announcementModeSpinner.getSelectedItemPosition()),
+                announcementVoiceValue(announcementVoiceSpinner.getSelectedItemPosition()));
     }
 
     private void showHomeGuide() {
@@ -479,6 +493,26 @@ public final class SettingsActivity extends Activity {
     private int orientationIndex(String orientationMode) {
         if (AppSettings.ORIENTATION_PORTRAIT.equals(orientationMode)) return 1;
         if (AppSettings.ORIENTATION_LANDSCAPE.equals(orientationMode)) return 2;
+        return 0;
+    }
+
+    private String announcementModeValue(int index) {
+        if (index == 1) return AppSettings.ANNOUNCEMENT_MODE_TTS;
+        return AppSettings.ANNOUNCEMENT_MODE_RECORDED;
+    }
+
+    private int announcementModeIndex(String announcementMode) {
+        if (AppSettings.ANNOUNCEMENT_MODE_TTS.equals(announcementMode)) return 1;
+        return 0;
+    }
+
+    private String announcementVoiceValue(int index) {
+        if (index == 1) return AppSettings.ANNOUNCEMENT_VOICE_FEMALE;
+        return AppSettings.ANNOUNCEMENT_VOICE_MALE;
+    }
+
+    private int announcementVoiceIndex(String announcementVoice) {
+        if (AppSettings.ANNOUNCEMENT_VOICE_FEMALE.equals(announcementVoice)) return 1;
         return 0;
     }
 

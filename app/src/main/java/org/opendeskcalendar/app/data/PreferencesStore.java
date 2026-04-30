@@ -41,6 +41,8 @@ public final class PreferencesStore {
     private static final String KEY_HOURLY_ANNOUNCEMENT = "hourly_announcement";
     private static final String KEY_HALF_HOURLY_ANNOUNCEMENT = "half_hourly_announcement";
     private static final String KEY_HOURLY_QUIET_NIGHT = "hourly_quiet_night";
+    private static final String KEY_ANNOUNCEMENT_MODE = "announcement_mode";
+    private static final String KEY_ANNOUNCEMENT_VOICE = "announcement_voice";
     private static final String KEY_NIGHT_DIM = "night_dim";
     private static final String KEY_BURN_IN = "burn_in_protection";
     private static final String KEY_INDOOR_ENABLED = "indoor_enabled";
@@ -61,6 +63,16 @@ public final class PreferencesStore {
     public AppSettings getSettings() {
         String theme = preferences.getString(KEY_THEME, AppSettings.THEME_DARK);
         boolean eink = AppSettings.THEME_EINK.equals(theme);
+        String legacyAnnouncementVoice = preferences.getString(KEY_ANNOUNCEMENT_VOICE, AppSettings.ANNOUNCEMENT_VOICE_MALE);
+        String announcementMode = preferences.getString(KEY_ANNOUNCEMENT_MODE, null);
+        if (announcementMode == null) {
+            announcementMode = "system".equals(legacyAnnouncementVoice)
+                    ? AppSettings.ANNOUNCEMENT_MODE_TTS
+                    : AppSettings.ANNOUNCEMENT_MODE_RECORDED;
+        }
+        String announcementVoice = AppSettings.ANNOUNCEMENT_VOICE_FEMALE.equals(legacyAnnouncementVoice)
+                ? AppSettings.ANNOUNCEMENT_VOICE_FEMALE
+                : AppSettings.ANNOUNCEMENT_VOICE_MALE;
         return new AppSettings(
                 theme,
                 preferences.getBoolean(KEY_SHOW_SECONDS, true),
@@ -86,6 +98,8 @@ public final class PreferencesStore {
                 preferences.getBoolean(KEY_HOURLY_ANNOUNCEMENT, false),
                 preferences.getBoolean(KEY_HALF_HOURLY_ANNOUNCEMENT, false),
                 preferences.getBoolean(KEY_HOURLY_QUIET_NIGHT, true),
+                announcementMode,
+                announcementVoice,
                 preferences.getBoolean(KEY_NIGHT_DIM, false),
                 preferences.getBoolean(KEY_BURN_IN, true),
                 preferences.getBoolean(KEY_INDOOR_ENABLED, false),
@@ -119,6 +133,8 @@ public final class PreferencesStore {
                 .putBoolean(KEY_HOURLY_ANNOUNCEMENT, settings.hourlyAnnouncementEnabled)
                 .putBoolean(KEY_HALF_HOURLY_ANNOUNCEMENT, settings.halfHourlyAnnouncementEnabled)
                 .putBoolean(KEY_HOURLY_QUIET_NIGHT, settings.hourlyAnnouncementQuietNight)
+                .putString(KEY_ANNOUNCEMENT_MODE, safe(settings.announcementMode))
+                .putString(KEY_ANNOUNCEMENT_VOICE, safe(settings.announcementVoice))
                 .putBoolean(KEY_NIGHT_DIM, settings.nightDimEnabled)
                 .putBoolean(KEY_BURN_IN, settings.burnInProtectionEnabled)
                 .putBoolean(KEY_INDOOR_ENABLED, settings.indoorEnabled)

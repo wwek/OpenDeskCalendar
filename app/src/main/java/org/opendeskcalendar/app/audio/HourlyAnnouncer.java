@@ -5,6 +5,7 @@ import android.media.AudioAttributes;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
+import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
@@ -46,20 +47,26 @@ public final class HourlyAnnouncer implements TextToSpeech.OnInitListener {
     private boolean unavailableLogged;
     private boolean promptToneUnavailableLogged;
     private long lastAnnouncedKey = -1L;
-    private String pendingText = "";
+    private int pendingHour = -1;
+    private int pendingMinute = -1;
+    private boolean pendingUse24Hour = true;
+    private String pendingAnnouncementMode = AppSettings.ANNOUNCEMENT_MODE_RECORDED;
+    private String pendingAnnouncementVoice = AppSettings.ANNOUNCEMENT_VOICE_MALE;
+    private MediaPlayer recordedPlayer;
 
     public HourlyAnnouncer(Context context, PreferencesStore store) {
         this.context = context.getApplicationContext();
         this.store = store;
         audioManager = (AudioManager) this.context.getSystemService(Context.AUDIO_SERVICE);
         promptSamples = buildChimeSamples();
-        textToSpeech = new TextToSpeech(this.context, this);
     }
 
     @Override
     public void onInit(int status) {
         if (status != TextToSpeech.SUCCESS || textToSpeech == null) {
             logUnavailable(context.getString(R.string.hourly_announcement_tts_unavailable));
+            releaseTextToSpeech();
+            clearPendingAnnouncement();
             notifyStatus(R.string.settings_hourly_test_failed);
             return;
         }
@@ -68,14 +75,21 @@ public final class HourlyAnnouncer implements TextToSpeech.OnInitListener {
         int result = textToSpeech.setLanguage(locale);
         if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
             logUnavailable(context.getString(R.string.hourly_announcement_language_unavailable));
+            releaseTextToSpeech();
+            clearPendingAnnouncement();
             notifyStatus(R.string.settings_hourly_test_failed);
             return;
         }
         ready = true;
-        if (pendingText.length() > 0) {
-            String text = pendingText;
-            pendingText = "";
-            speak(text);
+        if (pendingHour >= 0) {
+            int hour = pendingHour;
+            int minute = pendingMinute;
+            boolean use24Hour = pendingUse24Hour;
+            String announcementMode = pendingAnnouncementMode;
+            clearPendingAnnouncement();
+            if (AppSettings.ANNOUNCEMENT_MODE_TTS.equals(announcementMode)) {
+                speak(hour, minute, use24Hour);
+            }
         }
     }
 
@@ -102,16 +116,21 @@ public final class HourlyAnnouncer implements TextToSpeech.OnInitListener {
         if (key == lastAnnouncedKey) {
             return;
         }
-        String text = minute == 30
-                ? context.getString(R.string.half_hourly_announcement_text, hour)
-                : context.getString(R.string.hourly_announcement_text, hour);
-        if (speakWhenReady(text) && ready) {
+        if (speakWhenReady(hour, minute, settings.use24Hour, settings.announcementMode, settings.announcementVoice)) {
             lastAnnouncedKey = key;
         }
     }
 
     public void announceNow(int hour) {
-        speakWhenReady(context.getString(R.string.hourly_announcement_text, hour));
+        speakWhenReady(hour, 0, true, AppSettings.ANNOUNCEMENT_MODE_RECORDED, AppSettings.ANNOUNCEMENT_VOICE_MALE);
+    }
+
+    public void announceNow(int hour, boolean use24Hour) {
+        speakWhenReady(hour, 0, use24Hour, AppSettings.ANNOUNCEMENT_MODE_RECORDED, AppSettings.ANNOUNCEMENT_VOICE_MALE);
+    }
+
+    public void announceNow(int hour, boolean use24Hour, String announcementMode, String announcementVoice) {
+        speakWhenReady(hour, 0, use24Hour, announcementMode, announcementVoice);
     }
 
     public void setListener(Listener listener) {
@@ -122,7 +141,8 @@ public final class HourlyAnnouncer implements TextToSpeech.OnInitListener {
         if (textToSpeech != null) {
             textToSpeech.stop();
         }
-        pendingText = "";
+        releaseRecordedPlayer();
+        clearPendingAnnouncement();
     }
 
     public void shutdown() {
@@ -132,25 +152,41 @@ public final class HourlyAnnouncer implements TextToSpeech.OnInitListener {
             textToSpeech = null;
         }
         ready = false;
-        pendingText = "";
+        releaseRecordedPlayer();
+        releaseTextToSpeech();
+        clearPendingAnnouncement();
     }
 
-    private boolean speakWhenReady(String text) {
+    private boolean speakWhenReady(int hour, int minute, boolean use24Hour, String announcementMode, String announcementVoice) {
         warnIfVolumeZero();
+        if (!AppSettings.ANNOUNCEMENT_MODE_TTS.equals(announcementMode)) {
+            releaseTextToSpeech();
+            return playRecordedAnnouncement(hour, minute, use24Hour, announcementVoice, true);
+        }
         if (textToSpeech == null) {
-            logUnavailable(context.getString(R.string.hourly_announcement_tts_unavailable));
-            notifyStatus(R.string.settings_hourly_test_failed);
-            return false;
+            pendingHour = hour;
+            pendingMinute = minute;
+            pendingUse24Hour = use24Hour;
+            pendingAnnouncementMode = announcementMode;
+            pendingAnnouncementVoice = announcementVoice;
+            notifyStatus(R.string.settings_hourly_test_queued);
+            textToSpeech = new TextToSpeech(context, this);
+            return true;
         }
         if (!ready) {
-            pendingText = text;
+            pendingHour = hour;
+            pendingMinute = minute;
+            pendingUse24Hour = use24Hour;
+            pendingAnnouncementMode = announcementMode;
+            pendingAnnouncementVoice = announcementVoice;
             notifyStatus(R.string.settings_hourly_test_queued);
             return true;
         }
-        return speak(text);
+        return speak(hour, minute, use24Hour);
     }
 
-    private boolean speak(String text) {
+    private boolean speak(int hour, int minute, boolean use24Hour) {
+        String text = announcementText(hour, minute, use24Hour);
         playPromptTone();
         int queueMode = queueSpeechDelay() ? TextToSpeech.QUEUE_ADD : TextToSpeech.QUEUE_FLUSH;
         int result;
@@ -204,6 +240,143 @@ public final class HourlyAnnouncer implements TextToSpeech.OnInitListener {
                 notifyStatus(R.string.settings_hourly_test_failed);
             }
         });
+    }
+
+    private boolean playRecordedAnnouncement(int hour, int minute, boolean use24Hour, String announcementVoice, boolean includePromptTone) {
+        final int resourceId = recordedAnnouncementResource(hour, minute, use24Hour, announcementVoice);
+        if (resourceId == 0) {
+            notifyStatus(R.string.settings_hourly_test_failed);
+            return false;
+        }
+        if (includePromptTone) {
+            playPromptTone();
+        }
+        Thread thread = new Thread(() -> playRecordedAnnouncementAfterPrompt(resourceId), "hourly-announcement-recorded");
+        thread.start();
+        return true;
+    }
+
+    private void playRecordedAnnouncementAfterPrompt(int resourceId) {
+        try {
+            Thread.sleep(SPEECH_DELAY_MILLIS);
+        } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
+            return;
+        }
+        try {
+            releaseRecordedPlayer();
+            MediaPlayer player = MediaPlayer.create(context, resourceId);
+            if (player == null) {
+                notifyStatus(R.string.settings_hourly_test_failed);
+                return;
+            }
+            recordedPlayer = player;
+            player.setOnCompletionListener(completed -> {
+                releaseRecordedPlayer();
+                notifyStatus(R.string.settings_hourly_test_done);
+            });
+            player.setOnErrorListener((failed, what, extra) -> {
+                releaseRecordedPlayer();
+                notifyStatus(R.string.settings_hourly_test_failed);
+                return true;
+            });
+            notifyStatus(R.string.settings_hourly_test_started);
+            player.start();
+        } catch (RuntimeException exception) {
+            releaseRecordedPlayer();
+            notifyStatus(R.string.settings_hourly_test_failed);
+        }
+    }
+
+    private int recordedAnnouncementResource(int hour, int minute, boolean use24Hour, String announcementVoice) {
+        if (hour < 0 || hour > 23) {
+            return 0;
+        }
+        String prefix;
+        if (AppSettings.ANNOUNCEMENT_VOICE_FEMALE.equals(announcementVoice)) {
+            if (use24Hour) {
+                prefix = minute == 30 ? "announcement_female_half_" : "announcement_female_hour_";
+            } else {
+                prefix = minute == 30 ? "announcement_female_12h_half_" : "announcement_female_12h_hour_";
+            }
+        } else {
+            if (use24Hour) {
+                prefix = minute == 30 ? "announcement_half_" : "announcement_hour_";
+            } else {
+                prefix = minute == 30 ? "announcement_12h_half_" : "announcement_12h_hour_";
+            }
+        }
+        String name = prefix + (hour < 10 ? "0" : "") + hour;
+        return context.getResources().getIdentifier(name, "raw", context.getPackageName());
+    }
+
+    private String announcementText(int hour, int minute, boolean use24Hour) {
+        if (use24Hour) {
+            return minute == 30
+                    ? context.getString(R.string.half_hourly_announcement_text, hour)
+                    : context.getString(R.string.hourly_announcement_text, hour);
+        }
+        String phrase = twelveHourPhrase(hour);
+        return minute == 30
+                ? context.getString(R.string.half_hourly_announcement_12h_text, phrase)
+                : context.getString(R.string.hourly_announcement_12h_text, phrase);
+    }
+
+    private String twelveHourPhrase(int hour) {
+        return periodLabel(hour) + twelveHourNumber(hour) + context.getString(R.string.hour_label);
+    }
+
+    private String periodLabel(int hour) {
+        if (hour < 6) {
+            return context.getString(R.string.period_late_night);
+        }
+        if (hour < 12) {
+            return context.getString(R.string.period_morning);
+        }
+        if (hour == 12) {
+            return context.getString(R.string.period_noon);
+        }
+        if (hour < 18) {
+            return context.getString(R.string.period_afternoon);
+        }
+        return context.getString(R.string.period_evening);
+    }
+
+    private String twelveHourNumber(int hour) {
+        String[] labels = context.getResources().getStringArray(R.array.twelve_hour_number_names);
+        return labels[hour % 12];
+    }
+
+    private void clearPendingAnnouncement() {
+        pendingHour = -1;
+        pendingMinute = -1;
+        pendingUse24Hour = true;
+        pendingAnnouncementMode = AppSettings.ANNOUNCEMENT_MODE_RECORDED;
+        pendingAnnouncementVoice = AppSettings.ANNOUNCEMENT_VOICE_MALE;
+    }
+
+    private void releaseRecordedPlayer() {
+        if (recordedPlayer == null) {
+            return;
+        }
+        try {
+            recordedPlayer.release();
+        } catch (RuntimeException ignored) {
+        }
+        recordedPlayer = null;
+    }
+
+    private void releaseTextToSpeech() {
+        if (textToSpeech == null) {
+            return;
+        }
+        try {
+            textToSpeech.stop();
+            textToSpeech.shutdown();
+        } catch (RuntimeException ignored) {
+        }
+        textToSpeech = null;
+        ready = false;
     }
 
     private AudioTrack createStreamingAudioTrack(int bufferSizeBytes) {

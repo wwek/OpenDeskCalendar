@@ -49,6 +49,8 @@
     <string name="settings_hourly_announcement">整点语音播报</string>
     <string name="settings_half_hourly_announcement">半点语音播报</string>
     <string name="settings_hourly_quiet_night">夜间不播报（22:00 至 06:00）</string>
+    <string name="settings_announcement_mode">播报方式</string>
+    <string name="settings_announcement_voice">播报音色</string>
     <string name="settings_hourly_test_label">播报测试</string>
     <string name="settings_hourly_test">立即测试</string>
     <string name="settings_hourly_test_queued">正在准备语音播报</string>
@@ -91,6 +93,14 @@
     <string name="backup_launcher_unavailable">备用启动器不可用</string>
     <string name="hourly_announcement_text">现在是 %1$d 点整</string>
     <string name="half_hourly_announcement_text">现在是 %1$d 点半</string>
+    <string name="hourly_announcement_12h_text">现在是%1$s整</string>
+    <string name="half_hourly_announcement_12h_text">现在是%1$s半</string>
+    <string name="hour_label">点</string>
+    <string name="period_late_night">凌晨</string>
+    <string name="period_morning">上午</string>
+    <string name="period_noon">中午</string>
+    <string name="period_afternoon">下午</string>
+    <string name="period_evening">晚上</string>
     <string name="hourly_announcement_tts_unavailable">系统语音播报不可用</string>
     <string name="hourly_announcement_language_unavailable">系统语音播报不支持当前中文语言</string>
     <string name="hourly_announcement_tts_not_ready">系统语音播报尚未准备好</string>
@@ -144,6 +154,28 @@
     <string-array name="weather_provider_names">
         <item>Open-Meteo</item>
         <item>和风天气</item>
+    </string-array>
+    <string-array name="announcement_mode_names">
+        <item>内置播报音</item>
+        <item>系统 TTS</item>
+    </string-array>
+    <string-array name="announcement_voice_names">
+        <item>男声</item>
+        <item>女声</item>
+    </string-array>
+    <string-array name="twelve_hour_number_names">
+        <item>十二</item>
+        <item>一</item>
+        <item>二</item>
+        <item>三</item>
+        <item>四</item>
+        <item>五</item>
+        <item>六</item>
+        <item>七</item>
+        <item>八</item>
+        <item>九</item>
+        <item>十</item>
+        <item>十一</item>
     </string-array>
     <string-array name="system_menu_items">
         <item>打开系统网络设置</item>
