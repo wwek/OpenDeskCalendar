@@ -34,7 +34,7 @@ OpenDeskCalendar 是一个面向旧手机、旧平板和 Android 电纸书设备
 - Home/Launcher Activity，以及长按进入设置和系统入口的防锁死路径。
 - 夜间自动降亮度、退出确认开关和诊断日志导出。
 - 默认开启的防烧屏轻微位移。
-- 本机 release 签名脚本和 GitHub Actions release 构建入口。
+- 本机自签名 release 脚本和 GitHub Actions release 构建入口。
 - 简体中文和繁体中文界面资源。
 
 暂未完成：
@@ -78,18 +78,20 @@ OpenDeskCalendar 是一个面向旧手机、旧平板和 Android 电纸书设备
 app/build/outputs/apk/debug/app-debug.apk
 ```
 
-## Release 签名
+## Release 自签名
 
-生成本机 release keystore 并写入 `local.properties`：
+这是开源项目，仓库不会包含作者的 release keystore，作者也不会上传自己的签名私钥。自己编译或 fork 发布时，请生成并保管你自己的签名；同一个 APK 后续升级必须使用同一个 keystore。
 
-```sh
-./scripts/create-release-keystore.sh
-```
-
-构建并校验签名 release APK：
+本地构建带签名 APK：
 
 ```sh
 ./scripts/build-release.sh
+```
+
+首次运行如果没有签名配置，脚本会自动生成本机 keystore，并写入已忽略的 `local.properties`。也可以提前手动生成：
+
+```sh
+./scripts/create-release-keystore.sh
 ```
 
 输出：
@@ -98,15 +100,7 @@ app/build/outputs/apk/debug/app-debug.apk
 app/build/outputs/apk/release/app-release.apk
 ```
 
-签名配置不会提交到仓库。脚本会把 keystore 放在 `.local/signing/`，并把密码写入已忽略的 `local.properties`。请备份 keystore 和对应密码；丢失后将无法用同一签名身份更新已安装的 release APK。
-
-本地直接构建带签名 APK 只需要：
-
-```sh
-./scripts/build-release.sh
-```
-
-首次运行时如果没有签名配置，脚本会自动创建本机 keystore；之后会复用同一签名。
+默认 keystore 路径是 `.local/signing/opendeskcalendar-release.jks`。请备份这个文件和 `local.properties` 里的密码；丢失后将无法用同一签名身份更新已经安装的 release APK。
 
 CI 或其他机器也可以用环境变量提供签名配置：
 
@@ -117,7 +111,7 @@ OPEN_DESK_CALENDAR_KEY_ALIAS=opendeskcalendar
 OPEN_DESK_CALENDAR_KEY_PASSWORD=...
 ```
 
-GitHub Actions 不提交 keystore 文件。把本机 release keystore 转成单行 base64：
+如果你要让自己的 GitHub Actions 在推送 tag 后自动发布签名 APK，需要把自己的 keystore 配到自己仓库的 Secrets。先转成单行 base64：
 
 ```sh
 base64 < .local/signing/opendeskcalendar-release.jks | tr -d '\n'
@@ -132,14 +126,14 @@ OPEN_DESK_CALENDAR_KEY_ALIAS
 OPEN_DESK_CALENDAR_KEY_PASSWORD
 ```
 
-也可以用脚本把本机签名配置写入 GitHub Actions secrets：
+也可以用脚本写入当前 GitHub 仓库的 Actions secrets：
 
 ```sh
 gh auth login
 ./scripts/configure-github-release-secrets.sh
 ```
 
-PR 和 `main` 分支会构建 debug APK。推送 `v*` tag 时会用这些 secrets 构建签名 release APK，上传 workflow artifact，并创建 / 更新 GitHub Release，附加 `OpenDeskCalendar-vX.Y.Z.apk`。
+PR 和 `main` 分支只构建 debug APK。推送 `v*` tag 时，GitHub Actions 会读取这些 secrets 构建签名 release APK，上传 workflow artifact，并创建 / 更新 GitHub Release，附加 `OpenDeskCalendar-vX.Y.Z.apk`。
 
 一键发布新版本：
 
