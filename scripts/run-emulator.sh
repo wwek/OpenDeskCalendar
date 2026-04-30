@@ -24,6 +24,25 @@ wait_for_boot() {
   done
 }
 
+install_debug_apk() {
+  local install_output
+
+  if install_output="$("$ADB" -s "$SERIAL" install -r "$APK" 2>&1)"; then
+    printf '%s\n' "$install_output"
+    return 0
+  fi
+
+  printf '%s\n' "$install_output" >&2
+
+  if [[ "$install_output" != *"INSTALL_FAILED_UPDATE_INCOMPATIBLE"* ]]; then
+    return 1
+  fi
+
+  echo "Existing $PACKAGE_NAME has a different signature. Uninstalling it from $SERIAL and retrying; emulator app data will be removed." >&2
+  "$ADB" -s "$SERIAL" uninstall "$PACKAGE_NAME"
+  "$ADB" -s "$SERIAL" install -r "$APK"
+}
+
 SERIAL="${1:-}"
 if [[ -z "$SERIAL" ]]; then
   SERIAL="$(first_running_emulator)"
@@ -60,5 +79,5 @@ wait_for_boot "$SERIAL"
 
 cd "$ROOT"
 ./gradlew --no-daemon :app:assembleDebug
-"$ADB" -s "$SERIAL" install -r "$APK"
+install_debug_apk
 "$ADB" -s "$SERIAL" shell am start -n "$PACKAGE_NAME/$MAIN_ACTIVITY"
