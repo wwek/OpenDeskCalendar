@@ -311,7 +311,7 @@ public final class DashboardView extends FrameLayout {
             });
             bar.addView(state, new LinearLayout.LayoutParams(dp(46), LayoutParams.MATCH_PARENT));
         }
-        bar.addView(new BatteryStatusView(getContext(), batteryPercent(), palette.muted), new LinearLayout.LayoutParams(dp(46), LayoutParams.MATCH_PARENT));
+        bar.addView(new BatteryStatusView(getContext(), batteryPercent(), palette.muted), new LinearLayout.LayoutParams(dp(42), LayoutParams.MATCH_PARENT));
         return bar;
     }
 
@@ -369,7 +369,7 @@ public final class DashboardView extends FrameLayout {
     private View buildPortraitWeatherSection() {
         LinearLayout section = vertical();
         section.setGravity(Gravity.CENTER_VERTICAL);
-        section.setPadding(dp(14), dp(10), dp(14), dp(10));
+        section.setPadding(dp(10), dp(10), dp(10), dp(10));
         section.setOnLongClickListener(new OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
@@ -383,12 +383,12 @@ public final class DashboardView extends FrameLayout {
         LinearLayout main = horizontal();
         main.setGravity(Gravity.CENTER_VERTICAL);
         WeatherIconView currentIcon = new WeatherIconView(getContext(), weather.condition, WeatherIconView.colorFor(weather.condition, settings, palette));
-        LinearLayout.LayoutParams iconParams = new LinearLayout.LayoutParams(dp(44), dp(44));
-        iconParams.rightMargin = dp(12);
+        LinearLayout.LayoutParams iconParams = new LinearLayout.LayoutParams(dp(40), dp(40));
+        iconParams.rightMargin = dp(8);
         main.addView(currentIcon, iconParams);
 
-        LinearLayout.LayoutParams tempParams = new LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT, 1.35f);
-        tempParams.rightMargin = dp(12);
+        LinearLayout.LayoutParams tempParams = new LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT, 1.15f);
+        tempParams.rightMargin = dp(8);
         main.addView(buildWeatherMetric(verticalWeatherLabel("温\n度", "溫\n度"), weather.temperatureCelsius + "°C", 36), tempParams);
         main.addView(buildWeatherMetric(verticalWeatherLabel("湿\n度", "濕\n度"), weather.humidityPercent + "%", 36), new LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f));
         section.addView(main, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
@@ -407,7 +407,7 @@ public final class DashboardView extends FrameLayout {
     private View buildLandscapeWeatherSection() {
         LinearLayout section = vertical();
         section.setGravity(Gravity.CENTER_VERTICAL);
-        section.setPadding(dp(16), dp(10), dp(16), dp(10));
+        section.setPadding(dp(10), dp(10), dp(10), dp(10));
         section.setOnLongClickListener(new OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
@@ -421,12 +421,12 @@ public final class DashboardView extends FrameLayout {
         LinearLayout main = horizontal();
         main.setGravity(Gravity.CENTER_VERTICAL);
         WeatherIconView currentIcon = new WeatherIconView(getContext(), weather.condition, WeatherIconView.colorFor(weather.condition, settings, palette));
-        LinearLayout.LayoutParams iconParams = new LinearLayout.LayoutParams(dp(44), dp(44));
-        iconParams.rightMargin = dp(10);
+        LinearLayout.LayoutParams iconParams = new LinearLayout.LayoutParams(dp(40), dp(40));
+        iconParams.rightMargin = dp(8);
         main.addView(currentIcon, iconParams);
 
-        LinearLayout.LayoutParams tempParams = new LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT, 1.35f);
-        tempParams.rightMargin = dp(12);
+        LinearLayout.LayoutParams tempParams = new LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT, 1.15f);
+        tempParams.rightMargin = dp(8);
         main.addView(buildWeatherMetric(verticalWeatherLabel("温\n度", "溫\n度"), weather.temperatureCelsius + "°C", 40), tempParams);
 
         main.addView(buildWeatherMetric(verticalWeatherLabel("湿\n度", "濕\n度"), weather.humidityPercent + "%", 40), new LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f));
@@ -459,8 +459,8 @@ public final class DashboardView extends FrameLayout {
         label.setGravity(Gravity.CENTER);
         label.setIncludeFontPadding(false);
         label.setLineSpacing(0f, 0.88f);
-        LinearLayout.LayoutParams labelParams = new LinearLayout.LayoutParams(dp(18), LayoutParams.WRAP_CONTENT);
-        labelParams.rightMargin = dp(6);
+        LinearLayout.LayoutParams labelParams = new LinearLayout.LayoutParams(dp(16), LayoutParams.WRAP_CONTENT);
+        labelParams.rightMargin = dp(4);
         metric.addView(label, labelParams);
 
         TextView text = label(value, valueSp, palette.primary, true);

@@ -23,8 +23,8 @@ public final class BatteryStatusView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        float width = Math.min(getWidth() - dp(10), dp(46));
-        float height = Math.min(getHeight() * 0.42f, dp(22));
+        float width = Math.min(getWidth() - dp(8), dp(38));
+        float height = Math.min(getHeight() * 0.38f, dp(18));
         float left = (getWidth() - width) / 2f - dp(1);
         float top = (getHeight() - height) / 2f;
         float capWidth = dp(3);
@@ -33,14 +33,14 @@ public final class BatteryStatusView extends View {
 
         paint.setColor(color);
         paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(dp(1.5f));
-        canvas.drawRoundRect(body, dp(3.5f), dp(3.5f), paint);
+        paint.setStrokeWidth(dp(1.3f));
+        canvas.drawRoundRect(body, dp(3f), dp(3f), paint);
         canvas.drawRoundRect(cap, dp(1.5f), dp(1.5f), paint);
 
         String text = percent >= 0 ? percent + "%" : "--";
         paint.setStyle(Paint.Style.FILL);
         paint.setTextAlign(Paint.Align.CENTER);
-        paint.setTextSize(sp(9));
+        paint.setTextSize(sp(8));
         paint.setFakeBoldText(true);
         Paint.FontMetrics metrics = paint.getFontMetrics();
         float baseline = body.centerY() - (metrics.ascent + metrics.descent) / 2f;
