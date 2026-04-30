@@ -12,6 +12,7 @@ public final class ThemePalette {
     public final int secondary;
     public final int muted;
     public final int accent;
+    public final int accentSecondary;
     public final int todayFill;
     public final int holiday;
     public final int workday;
@@ -27,6 +28,7 @@ public final class ThemePalette {
             int secondary,
             int muted,
             int accent,
+            int accentSecondary,
             int todayFill,
             int holiday,
             int workday,
@@ -40,6 +42,7 @@ public final class ThemePalette {
         this.secondary = secondary;
         this.muted = muted;
         this.accent = accent;
+        this.accentSecondary = accentSecondary;
         this.todayFill = todayFill;
         this.holiday = holiday;
         this.workday = workday;
@@ -51,13 +54,14 @@ public final class ThemePalette {
     public static ThemePalette from(AppSettings settings) {
         if (AppSettings.THEME_DARK.equals(settings.theme)) {
             return new ThemePalette(
-                    Color.rgb(16, 18, 22),
-                    Color.rgb(24, 27, 32),
-                    Color.rgb(62, 68, 76),
+                    Color.rgb(15, 17, 20),
+                    Color.rgb(22, 25, 30),
+                    Color.rgb(48, 52, 58),
                     Color.rgb(245, 247, 250),
                     Color.rgb(201, 209, 219),
                     Color.rgb(138, 148, 160),
-                    Color.rgb(70, 163, 255),
+                    Color.rgb(96, 165, 250),
+                    Color.rgb(147, 197, 253),
                     Color.rgb(22, 75, 128),
                     Color.rgb(74, 222, 128),
                     Color.rgb(251, 146, 60),
@@ -74,6 +78,7 @@ public final class ThemePalette {
                     Color.rgb(32, 32, 32),
                     Color.rgb(92, 92, 92),
                     Color.BLACK,
+                    Color.BLACK,
                     Color.WHITE,
                     Color.BLACK,
                     Color.BLACK,
@@ -82,13 +87,14 @@ public final class ThemePalette {
                     true);
         }
         return new ThemePalette(
-                Color.rgb(248, 250, 252),
+                Color.rgb(250, 251, 253),
                 Color.rgb(255, 255, 255),
-                Color.rgb(214, 220, 228),
-                Color.rgb(20, 24, 33),
-                Color.rgb(58, 68, 82),
-                Color.rgb(104, 116, 132),
+                Color.rgb(226, 232, 240),
+                Color.rgb(15, 23, 42),
+                Color.rgb(51, 65, 85),
+                Color.rgb(100, 116, 139),
                 Color.rgb(37, 99, 235),
+                Color.rgb(30, 64, 175),
                 Color.rgb(219, 234, 254),
                 Color.rgb(22, 163, 74),
                 Color.rgb(234, 88, 12),
