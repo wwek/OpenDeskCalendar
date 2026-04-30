@@ -154,7 +154,7 @@ public final class HourlyAnnouncer implements TextToSpeech.OnInitListener {
         playPromptTone();
         int queueMode = queueSpeechDelay() ? TextToSpeech.QUEUE_ADD : TextToSpeech.QUEUE_FLUSH;
         int result;
-        if (Build.VERSION.SDK_INT >= 21) {
+        if (Build.VERSION.SDK_INT >= 23) {
             Bundle params = new Bundle();
             result = textToSpeech.speak(text, queueMode, params, UTTERANCE_ID);
         } else {
