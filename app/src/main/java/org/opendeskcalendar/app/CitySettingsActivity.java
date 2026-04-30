@@ -170,6 +170,7 @@ public final class CitySettingsActivity extends Activity {
                 current.backupLauncherPackage,
                 current.confirmExit,
                 current.nightDimEnabled,
+                current.burnInProtectionEnabled,
                 current.indoorEnabled,
                 current.indoorEndpoint,
                 current.indoorToken);

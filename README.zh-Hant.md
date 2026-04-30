@@ -33,6 +33,7 @@ OpenDeskCalendar 是一個面向舊手機、舊平板和 Android 電子紙裝置
 - 使用者主動開啟的開機自動啟動。
 - Home/Launcher Activity，以及長按進入設定和系統入口的防鎖死路徑。
 - 夜間自動降亮度、退出確認開關和診斷日誌匯出。
+- 預設開啟的防烙印輕微位移。
 - 本機 release 簽名腳本和 GitHub Actions release 建置入口。
 - 簡體中文和繁體中文介面資源。
 

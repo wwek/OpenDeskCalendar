@@ -37,6 +37,7 @@ public final class PreferencesStore {
     private static final String KEY_BACKUP = "backup_launcher";
     private static final String KEY_CONFIRM_EXIT = "confirm_exit";
     private static final String KEY_NIGHT_DIM = "night_dim";
+    private static final String KEY_BURN_IN = "burn_in_protection";
     private static final String KEY_INDOOR_ENABLED = "indoor_enabled";
     private static final String KEY_INDOOR_ENDPOINT = "indoor_endpoint";
     private static final String KEY_INDOOR_TOKEN = "indoor_token";
@@ -76,6 +77,7 @@ public final class PreferencesStore {
                 preferences.getString(KEY_BACKUP, ""),
                 preferences.getBoolean(KEY_CONFIRM_EXIT, true),
                 preferences.getBoolean(KEY_NIGHT_DIM, false),
+                preferences.getBoolean(KEY_BURN_IN, true),
                 preferences.getBoolean(KEY_INDOOR_ENABLED, false),
                 preferences.getString(KEY_INDOOR_ENDPOINT, ""),
                 preferences.getString(KEY_INDOOR_TOKEN, ""));
@@ -103,6 +105,7 @@ public final class PreferencesStore {
                 .putString(KEY_BACKUP, safe(settings.backupLauncherPackage))
                 .putBoolean(KEY_CONFIRM_EXIT, settings.confirmExit)
                 .putBoolean(KEY_NIGHT_DIM, settings.nightDimEnabled)
+                .putBoolean(KEY_BURN_IN, settings.burnInProtectionEnabled)
                 .putBoolean(KEY_INDOOR_ENABLED, settings.indoorEnabled)
                 .putString(KEY_INDOOR_ENDPOINT, safe(settings.indoorEndpoint))
                 .putString(KEY_INDOOR_TOKEN, safe(settings.indoorToken))

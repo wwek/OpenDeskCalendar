@@ -49,6 +49,7 @@ public final class SettingsActivity extends Activity {
     private CheckBox wifiCheck;
     private CheckBox confirmExitCheck;
     private CheckBox nightDimCheck;
+    private CheckBox burnInCheck;
     private CheckBox indoorCheck;
     private EditText hostEdit;
     private EditText keyEdit;
@@ -148,10 +149,12 @@ public final class SettingsActivity extends Activity {
         keepOnCheck = check(getString(R.string.settings_keep_screen_on));
         wifiCheck = check(getString(R.string.settings_show_wifi));
         nightDimCheck = check(getString(R.string.settings_night_dim));
+        burnInCheck = check(getString(R.string.settings_burn_in_protection));
         confirmExitCheck = check(getString(R.string.settings_confirm_exit));
         root.addView(keepOnCheck);
         root.addView(wifiCheck);
         root.addView(nightDimCheck);
+        root.addView(burnInCheck);
         root.addView(confirmExitCheck);
 
         root.addView(section(getString(R.string.settings_section_diagnostics)));
@@ -196,6 +199,7 @@ public final class SettingsActivity extends Activity {
         keyEdit.setText(current.weatherKey);
         confirmExitCheck.setChecked(current.confirmExit);
         nightDimCheck.setChecked(current.nightDimEnabled);
+        burnInCheck.setChecked(current.burnInProtectionEnabled);
         indoorCheck.setChecked(current.indoorEnabled);
         indoorEndpointEdit.setText(current.indoorEndpoint);
         indoorTokenEdit.setText(current.indoorToken);
@@ -225,6 +229,7 @@ public final class SettingsActivity extends Activity {
                 backupPackage,
                 confirmExitCheck.isChecked(),
                 nightDimCheck.isChecked(),
+                burnInCheck.isChecked(),
                 indoorCheck.isChecked(),
                 indoorEndpointEdit.getText().toString().trim(),
                 indoorTokenEdit.getText().toString().trim());

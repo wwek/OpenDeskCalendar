@@ -134,11 +134,13 @@ public final class DashboardView extends FrameLayout {
         removeAllViews();
         setBackgroundColor(palette.background);
         boolean landscape = getWidth() > 0 && getWidth() >= getHeight();
+        View content;
         if (landscape) {
-            addView(buildLandscape(), matchFrame());
+            content = buildLandscape();
         } else {
-            addView(buildPortrait(), matchFrame());
+            content = buildPortrait();
         }
+        addContentView(content);
         messageView = buildMessageView();
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
                 LayoutParams.WRAP_CONTENT,
@@ -149,6 +151,36 @@ public final class DashboardView extends FrameLayout {
         params.bottomMargin = dp(24);
         addView(messageView, params);
         bindMessageVisibility();
+    }
+
+    private void addContentView(View content) {
+        FrameLayout.LayoutParams params = matchFrame();
+        if (settings.burnInProtectionEnabled) {
+            int[] offset = burnInOffset(burnInRange());
+            content.setTranslationX(offset[0]);
+            content.setTranslationY(offset[1]);
+        }
+        addView(content, params);
+    }
+
+    private int burnInRange() {
+        return Math.max(2, dp(3));
+    }
+
+    private int[] burnInOffset(int range) {
+        int[][] pattern = {
+                {0, 0},
+                {range, 0},
+                {range, range},
+                {0, range},
+                {-range, range},
+                {-range, 0},
+                {-range, -range},
+                {0, -range},
+                {range, -range}
+        };
+        int index = (int) ((System.currentTimeMillis() / 60000L) % pattern.length);
+        return pattern[index];
     }
 
     private View buildPortrait() {

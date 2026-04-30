@@ -26,6 +26,7 @@ public final class AppSettings {
     public final String backupLauncherPackage;
     public final boolean confirmExit;
     public final boolean nightDimEnabled;
+    public final boolean burnInProtectionEnabled;
     public final boolean indoorEnabled;
     public final String indoorEndpoint;
     public final String indoorToken;
@@ -51,6 +52,7 @@ public final class AppSettings {
             String backupLauncherPackage,
             boolean confirmExit,
             boolean nightDimEnabled,
+            boolean burnInProtectionEnabled,
             boolean indoorEnabled,
             String indoorEndpoint,
             String indoorToken) {
@@ -74,6 +76,7 @@ public final class AppSettings {
         this.backupLauncherPackage = backupLauncherPackage;
         this.confirmExit = confirmExit;
         this.nightDimEnabled = nightDimEnabled;
+        this.burnInProtectionEnabled = burnInProtectionEnabled;
         this.indoorEnabled = indoorEnabled;
         this.indoorEndpoint = indoorEndpoint;
         this.indoorToken = indoorToken;

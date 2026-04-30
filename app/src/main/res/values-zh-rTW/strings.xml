@@ -42,6 +42,7 @@
     <string name="settings_keep_screen_on">保持螢幕常亮</string>
     <string name="settings_show_wifi">顯示 Wi-Fi 狀態</string>
     <string name="settings_night_dim">夜間自動降低亮度（22:00 至 06:00）</string>
+    <string name="settings_burn_in_protection">防烙印輕微位移</string>
     <string name="settings_confirm_exit">返回鍵退出前確認</string>
     <string name="settings_section_diagnostics">診斷</string>
     <string name="settings_recent_errors">查看最近錯誤</string>
