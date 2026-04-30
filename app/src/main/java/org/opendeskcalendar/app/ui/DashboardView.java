@@ -273,7 +273,7 @@ public final class DashboardView extends FrameLayout {
         section.addView(constrainLandscapeCalendarWidth(buildCalendarSection(true, true)), new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, 0, 1f));
         if (settings.showAlmanac) {
             section.addView(constrainLandscapeCalendarWidth(softDivider()), new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, dp(1)));
-            section.addView(buildAlmanacSection(), new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, dp(70)));
+            section.addView(buildAlmanacSection(), new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, dp(48)));
         }
         return section;
     }
@@ -295,9 +295,9 @@ public final class DashboardView extends FrameLayout {
     private int landscapeCalendarContentWidth() {
         int columnWidth = Math.max(0, (getWidth() - dp(1)) / 2 - dp(16));
         if (columnWidth == 0) {
-            return dp(340);
+            return dp(390);
         }
-        return Math.min(dp(340), columnWidth);
+        return Math.min(dp(390), columnWidth);
     }
 
     private int portraitCalendarContentWidth() {
@@ -699,7 +699,7 @@ public final class DashboardView extends FrameLayout {
 
     private View buildCalendarSection(boolean compact, boolean inlineHeader) {
         LinearLayout section = vertical();
-        section.setPadding(compact ? dp(10) : dp(14), compact ? dp(4) : dp(12), compact ? dp(10) : dp(14), compact ? dp(4) : dp(12));
+        section.setPadding(compact ? dp(6) : dp(14), compact ? dp(4) : dp(12), compact ? dp(6) : dp(14), compact ? dp(4) : dp(12));
 
         Calendar now = almanacDate();
         ChineseLunarCalendar.LunarDate lunar = ChineseLunarCalendar.fromSolar(
@@ -855,7 +855,7 @@ public final class DashboardView extends FrameLayout {
         Calendar now = almanacDate();
         section.addView(buildLandscapeAlmanacRow(localize("宜："), localize(AlmanacProvider.fullGood(getContext(), now)), 1),
                 new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-        section.addView(buildLandscapeAlmanacRow(localize("忌："), localize(AlmanacProvider.fullAvoid(getContext(), now)), 2),
+        section.addView(buildLandscapeAlmanacRow(localize("忌："), localize(AlmanacProvider.fullAvoid(getContext(), now)), 1),
                 new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
         return section;
     }
