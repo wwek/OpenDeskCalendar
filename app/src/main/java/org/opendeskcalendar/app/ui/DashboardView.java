@@ -406,7 +406,7 @@ public final class DashboardView extends FrameLayout {
         } else {
             main = settings.showSeconds ? time12WithSecondsFormat.format(now.getTime()) : time12Format.format(now.getTime());
         }
-        TextView time = label(main, compact ? 68 : 54, palette.primary, true);
+        TextView time = label(main, compact ? 68 : 64, palette.primary, true);
         time.setIncludeFontPadding(false);
         time.setSingleLine(true);
         row.addView(time, new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
@@ -830,9 +830,9 @@ public final class DashboardView extends FrameLayout {
         lower.setIncludeFontPadding(false);
         texts.addView(lower, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
         if (isSelected(day)) {
-            texts.setPadding(dp(4), dp(2), dp(4), dp(2));
+            texts.setPadding(dp(5), dp(3), dp(5), dp(3));
             texts.setBackground(selectedDayBackground());
-            FrameLayout.LayoutParams selectedParams = new FrameLayout.LayoutParams(compact ? dp(42) : dp(54), compact ? dp(30) : dp(42), Gravity.CENTER);
+            FrameLayout.LayoutParams selectedParams = new FrameLayout.LayoutParams(compact ? dp(50) : dp(60), compact ? dp(36) : dp(46), Gravity.CENTER);
             cell.addView(texts, selectedParams);
         } else {
             cell.addView(texts, matchFrame());
