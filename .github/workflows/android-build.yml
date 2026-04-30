@@ -139,16 +139,15 @@ jobs:
             prerelease_args+=(--prerelease)
           fi
 
-          notes="$(cat <<EOF
+          cat > release-notes.md <<EOF
           Signed Android release APK.
 
           Build: ${GITHUB_SHA}
           Tag: ${TAG_NAME}
           EOF
-          )"
           if gh release view "$TAG_NAME" >/dev/null 2>&1; then
-            gh release edit "$TAG_NAME" --title "$TAG_NAME" "${prerelease_args[@]}"
+            gh release edit "$TAG_NAME" --title "$TAG_NAME" --notes-file release-notes.md "${prerelease_args[@]}"
           else
-            gh release create "$TAG_NAME" --title "$TAG_NAME" --notes "$notes" "${prerelease_args[@]}"
+            gh release create "$TAG_NAME" --title "$TAG_NAME" --notes-file release-notes.md "${prerelease_args[@]}"
           fi
           gh release upload "$TAG_NAME" "$asset" --clobber
