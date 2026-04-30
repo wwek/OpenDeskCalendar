@@ -16,6 +16,7 @@
     <string name="settings_show_seconds">顯示秒</string>
     <string name="settings_24_hour">24 小時制</string>
     <string name="settings_week_monday">週一作為一週開始</string>
+    <string name="settings_orientation">螢幕方向</string>
     <string name="settings_font_size">字級</string>
     <string name="settings_section_weather">天氣</string>
     <string name="settings_city">城市</string>
@@ -43,6 +44,11 @@
     <string name="settings_section_device">裝置</string>
     <string name="settings_keep_screen_on">保持螢幕常亮</string>
     <string name="settings_show_wifi">顯示 Wi-Fi 狀態</string>
+    <string name="settings_hourly_announcement">整點語音播報</string>
+    <string name="settings_hourly_quiet_night">夜間不播報（22:00 至 06:00）</string>
+    <string name="settings_hourly_test_label">播報測試</string>
+    <string name="settings_hourly_test">立即測試</string>
+    <string name="settings_hourly_test_started">已觸發測試播報</string>
     <string name="settings_night_dim">夜間自動降低亮度（22:00 至 06:00）</string>
     <string name="settings_burn_in_protection">防烙印輕微位移</string>
     <string name="settings_confirm_exit">返回鍵退出前確認</string>
@@ -76,8 +82,13 @@
     <string name="weather_failed_cache">天氣更新失敗，已顯示快取資料</string>
     <string name="system_settings_unavailable">系統設定入口不可用</string>
     <string name="backup_launcher_unavailable">備用啟動器不可用</string>
+    <string name="hourly_announcement_text">現在是 %1$d 點整</string>
+    <string name="hourly_announcement_tts_unavailable">系統語音播報不可用</string>
+    <string name="hourly_announcement_language_unavailable">系統語音播報不支援目前中文語言</string>
+    <string name="hourly_announcement_tts_not_ready">系統語音播報尚未準備好</string>
 
     <string name="dashboard_humidity">濕度 %1$d%%</string>
+    <string name="dashboard_apparent_temperature">體感 %1$d°C</string>
     <string name="dashboard_indoor">室內</string>
     <string name="dashboard_cache">快取</string>
     <string name="dashboard_forecast_title">未來三天天氣</string>
@@ -110,6 +121,11 @@
         <item>中</item>
         <item>大</item>
         <item>超大</item>
+    </string-array>
+    <string-array name="orientation_names">
+        <item>跟隨系統</item>
+        <item>強制直向</item>
+        <item>強制橫向</item>
     </string-array>
     <string-array name="refresh_names">
         <item>30 分鐘</item>

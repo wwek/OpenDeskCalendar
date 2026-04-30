@@ -100,7 +100,7 @@ public final class WeatherService {
         Uri.Builder builder = Uri.parse(host).buildUpon()
                 .appendQueryParameter("latitude", String.format(Locale.US, "%.5f", settings.latitude))
                 .appendQueryParameter("longitude", String.format(Locale.US, "%.5f", settings.longitude))
-                .appendQueryParameter("current", "temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m")
+                .appendQueryParameter("current", "temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m")
                 .appendQueryParameter("daily", "weather_code,temperature_2m_max,temperature_2m_min")
                 .appendQueryParameter("forecast_days", "3")
                 .appendQueryParameter("timezone", "auto");
@@ -176,10 +176,14 @@ public final class WeatherService {
         int weatherCode = current.optInt("weather_code");
         double windSpeed = current.optDouble("wind_speed_10m", 0d);
         double windDirection = current.optDouble("wind_direction_10m", 0d);
+        Integer apparentTemperature = current.has("apparent_temperature") && !current.isNull("apparent_temperature")
+                ? Integer.valueOf((int) Math.round(current.optDouble("apparent_temperature")))
+                : null;
         return new WeatherSnapshot(
                 settings.displayCity(),
                 condition(weatherCode),
                 (int) Math.round(current.optDouble("temperature_2m")),
+                apparentTemperature,
                 current.optInt("relative_humidity_2m"),
                 windDirection(windDirection) + " " + windLevel(windSpeed) + "级",
                 System.currentTimeMillis(),
@@ -222,6 +226,7 @@ public final class WeatherService {
                 settings.displayCity(),
                 now.optString("text", "阴"),
                 parseInt(now.optString("temp"), 0),
+                parseOptionalInt(now.optString("feelsLike")),
                 parseInt(now.optString("humidity"), 0),
                 qweatherWind(now.optString("windDir"), now.optString("windScale")),
                 System.currentTimeMillis(),
@@ -267,6 +272,17 @@ public final class WeatherService {
             return Integer.parseInt(value);
         } catch (NumberFormatException e) {
             return fallback;
+        }
+    }
+
+    private static Integer parseOptionalInt(String value) {
+        if (value == null || value.length() == 0) {
+            return null;
+        }
+        try {
+            return Integer.valueOf(Integer.parseInt(value));
+        } catch (NumberFormatException e) {
+            return null;
         }
     }
 

@@ -8,6 +8,7 @@ public final class WeatherSnapshot {
     public final String city;
     public final String condition;
     public final int temperatureCelsius;
+    public final Integer apparentTemperatureCelsius;
     public final int humidityPercent;
     public final String wind;
     public final long updatedAtMillis;
@@ -18,6 +19,7 @@ public final class WeatherSnapshot {
             String city,
             String condition,
             int temperatureCelsius,
+            Integer apparentTemperatureCelsius,
             int humidityPercent,
             String wind,
             long updatedAtMillis,
@@ -26,6 +28,7 @@ public final class WeatherSnapshot {
         this.city = city;
         this.condition = condition;
         this.temperatureCelsius = temperatureCelsius;
+        this.apparentTemperatureCelsius = apparentTemperatureCelsius;
         this.humidityPercent = humidityPercent;
         this.wind = wind;
         this.updatedAtMillis = updatedAtMillis;
@@ -38,6 +41,6 @@ public final class WeatherSnapshot {
         days.add(new ForecastDay("今天", "", "多云", 19, 23, 3));
         days.add(new ForecastDay("明天", "", "阴", 20, 26, 3));
         days.add(new ForecastDay("后天", "", "小雨", 19, 27, 61));
-        return new WeatherSnapshot(city, "多云", 26, 64, "东北风 1级", 0L, true, days);
+        return new WeatherSnapshot(city, "多云", 26, null, 64, "东北风 1级", 0L, true, days);
     }
 }

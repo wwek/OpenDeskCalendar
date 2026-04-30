@@ -26,6 +26,7 @@ public final class PreferencesStore {
     private static final String KEY_SHOW_LUNAR = "show_lunar";
     private static final String KEY_SHOW_ALMANAC = "show_almanac";
     private static final String KEY_SHOW_WIFI = "show_wifi";
+    private static final String KEY_ORIENTATION_MODE = "orientation_mode";
     private static final String KEY_FONT_SCALE = "font_scale";
     private static final String KEY_REFRESH = "weather_refresh";
     private static final String KEY_CITY = "city";
@@ -37,6 +38,8 @@ public final class PreferencesStore {
     private static final String KEY_KEY = "api_key";
     private static final String KEY_BACKUP = "backup_launcher";
     private static final String KEY_CONFIRM_EXIT = "confirm_exit";
+    private static final String KEY_HOURLY_ANNOUNCEMENT = "hourly_announcement";
+    private static final String KEY_HOURLY_QUIET_NIGHT = "hourly_quiet_night";
     private static final String KEY_NIGHT_DIM = "night_dim";
     private static final String KEY_BURN_IN = "burn_in_protection";
     private static final String KEY_INDOOR_ENABLED = "indoor_enabled";
@@ -67,6 +70,7 @@ public final class PreferencesStore {
                 preferences.getBoolean(KEY_SHOW_LUNAR, true),
                 preferences.getBoolean(KEY_SHOW_ALMANAC, true),
                 preferences.getBoolean(KEY_SHOW_WIFI, true),
+                preferences.getString(KEY_ORIENTATION_MODE, AppSettings.ORIENTATION_SYSTEM),
                 preferences.getInt(KEY_FONT_SCALE, 2),
                 preferences.getInt(KEY_REFRESH, eink ? 120 : 60),
                 preferences.getString(KEY_CITY, context.getString(R.string.default_city)),
@@ -78,6 +82,8 @@ public final class PreferencesStore {
                 preferences.getString(KEY_KEY, ""),
                 preferences.getString(KEY_BACKUP, ""),
                 preferences.getBoolean(KEY_CONFIRM_EXIT, true),
+                preferences.getBoolean(KEY_HOURLY_ANNOUNCEMENT, false),
+                preferences.getBoolean(KEY_HOURLY_QUIET_NIGHT, true),
                 preferences.getBoolean(KEY_NIGHT_DIM, false),
                 preferences.getBoolean(KEY_BURN_IN, true),
                 preferences.getBoolean(KEY_INDOOR_ENABLED, false),
@@ -96,6 +102,7 @@ public final class PreferencesStore {
                 .putBoolean(KEY_SHOW_LUNAR, settings.showLunar)
                 .putBoolean(KEY_SHOW_ALMANAC, settings.showAlmanac)
                 .putBoolean(KEY_SHOW_WIFI, settings.showWifi)
+                .putString(KEY_ORIENTATION_MODE, safe(settings.orientationMode))
                 .putInt(KEY_FONT_SCALE, settings.fontScale)
                 .putInt(KEY_REFRESH, settings.weatherRefreshMinutes)
                 .putString(KEY_CITY, safe(settings.cityName))
@@ -107,6 +114,8 @@ public final class PreferencesStore {
                 .putString(KEY_KEY, safe(settings.weatherKey))
                 .putString(KEY_BACKUP, safe(settings.backupLauncherPackage))
                 .putBoolean(KEY_CONFIRM_EXIT, settings.confirmExit)
+                .putBoolean(KEY_HOURLY_ANNOUNCEMENT, settings.hourlyAnnouncementEnabled)
+                .putBoolean(KEY_HOURLY_QUIET_NIGHT, settings.hourlyAnnouncementQuietNight)
                 .putBoolean(KEY_NIGHT_DIM, settings.nightDimEnabled)
                 .putBoolean(KEY_BURN_IN, settings.burnInProtectionEnabled)
                 .putBoolean(KEY_INDOOR_ENABLED, settings.indoorEnabled)
@@ -181,6 +190,7 @@ public final class PreferencesStore {
                     city,
                     json.optString("condition", "多云"),
                     json.optInt("temperature", 26),
+                    optionalInt(json, "apparentTemperature"),
                     json.optInt("humidity", 64),
                     json.optString("wind", "东北风 1级"),
                     json.optLong("updatedAt", 0L),
@@ -198,6 +208,9 @@ public final class PreferencesStore {
             json.put("city", snapshot.city);
             json.put("condition", snapshot.condition);
             json.put("temperature", snapshot.temperatureCelsius);
+            if (snapshot.apparentTemperatureCelsius != null) {
+                json.put("apparentTemperature", snapshot.apparentTemperatureCelsius.intValue());
+            }
             json.put("humidity", snapshot.humidityPercent);
             json.put("wind", snapshot.wind);
             json.put("updatedAt", snapshot.updatedAtMillis);
@@ -217,6 +230,13 @@ public final class PreferencesStore {
         } catch (JSONException e) {
             recordError("WeatherCache", context.getString(R.string.weather_cache_write_failed, e.getMessage()));
         }
+    }
+
+    private static Integer optionalInt(JSONObject json, String key) {
+        if (!json.has(key) || json.isNull(key)) {
+            return null;
+        }
+        return Integer.valueOf(json.optInt(key));
     }
 
     public void recordError(String module, String message) {

@@ -380,6 +380,17 @@ public final class DashboardView extends FrameLayout {
         humidity.setSingleLine(true);
         humidity.setEllipsize(TextUtils.TruncateAt.END);
         right.addView(humidity, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+        if (weather.apparentTemperatureCelsius != null) {
+            TextView apparent = label(
+                    getResources().getString(R.string.dashboard_apparent_temperature, weather.apparentTemperatureCelsius.intValue()),
+                    14,
+                    palette.secondary,
+                    false);
+            apparent.setGravity(Gravity.END);
+            apparent.setSingleLine(true);
+            apparent.setEllipsize(TextUtils.TruncateAt.END);
+            right.addView(apparent, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+        }
         TextView wind = label(localize(weather.condition + " | " + weather.wind), 14, palette.secondary, false);
         wind.setGravity(Gravity.END);
         wind.setSingleLine(true);

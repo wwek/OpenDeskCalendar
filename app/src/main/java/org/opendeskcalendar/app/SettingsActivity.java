@@ -24,6 +24,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.opendeskcalendar.app.R;
+import org.opendeskcalendar.app.audio.HourlyAnnouncer;
 import org.opendeskcalendar.app.data.AppSettings;
 import org.opendeskcalendar.app.data.PreferencesStore;
 import org.opendeskcalendar.app.ui.ChineseText;
@@ -36,8 +37,10 @@ public final class SettingsActivity extends Activity {
     private PreferencesStore store;
     private AppSettings current;
     private ThemePalette palette;
+    private HourlyAnnouncer hourlyAnnouncer;
     private Spinner themeSpinner;
     private Spinner fontSpinner;
+    private Spinner orientationSpinner;
     private Spinner refreshSpinner;
     private Spinner providerSpinner;
     private CheckBox secondsCheck;
@@ -49,6 +52,8 @@ public final class SettingsActivity extends Activity {
     private CheckBox almanacCheck;
     private CheckBox wifiCheck;
     private CheckBox confirmExitCheck;
+    private CheckBox hourlyAnnouncementCheck;
+    private CheckBox hourlyQuietNightCheck;
     private CheckBox nightDimCheck;
     private CheckBox burnInCheck;
     private CheckBox indoorCheck;
@@ -71,6 +76,15 @@ public final class SettingsActivity extends Activity {
         backupPackage = current.backupLauncherPackage;
         setContentView(buildContent());
         bindCurrent();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (hourlyAnnouncer != null) {
+            hourlyAnnouncer.shutdown();
+            hourlyAnnouncer = null;
+        }
     }
 
     @Override
@@ -102,6 +116,8 @@ public final class SettingsActivity extends Activity {
         root.addView(secondsCheck);
         root.addView(hour24Check);
         root.addView(mondayCheck);
+        orientationSpinner = spinner(getResources().getStringArray(R.array.orientation_names));
+        root.addView(row(getString(R.string.settings_orientation), orientationSpinner));
         fontSpinner = spinner(getResources().getStringArray(R.array.font_size_names));
         root.addView(row(getString(R.string.settings_font_size), fontSpinner));
 
@@ -151,11 +167,18 @@ public final class SettingsActivity extends Activity {
         root.addView(section(getString(R.string.settings_section_device)));
         keepOnCheck = check(getString(R.string.settings_keep_screen_on));
         wifiCheck = check(getString(R.string.settings_show_wifi));
+        hourlyAnnouncementCheck = check(getString(R.string.settings_hourly_announcement));
+        hourlyQuietNightCheck = check(getString(R.string.settings_hourly_quiet_night));
         nightDimCheck = check(getString(R.string.settings_night_dim));
         burnInCheck = check(getString(R.string.settings_burn_in_protection));
         confirmExitCheck = check(getString(R.string.settings_confirm_exit));
         root.addView(keepOnCheck);
         root.addView(wifiCheck);
+        root.addView(hourlyAnnouncementCheck);
+        root.addView(hourlyQuietNightCheck);
+        Button testHourlyAnnouncement = button(getString(R.string.settings_hourly_test));
+        testHourlyAnnouncement.setOnClickListener(v -> testHourlyAnnouncement());
+        root.addView(row(getString(R.string.settings_hourly_test_label), testHourlyAnnouncement));
         root.addView(nightDimCheck);
         root.addView(burnInCheck);
         root.addView(confirmExitCheck);
@@ -196,12 +219,15 @@ public final class SettingsActivity extends Activity {
         lunarCheck.setChecked(current.showLunar);
         almanacCheck.setChecked(current.showAlmanac);
         wifiCheck.setChecked(current.showWifi);
+        orientationSpinner.setSelection(orientationIndex(current.orientationMode));
         fontSpinner.setSelection(current.fontScale);
         refreshSpinner.setSelection(refreshIndex(current.weatherRefreshMinutes));
         providerSpinner.setSelection(providerIndex(current.weatherProvider));
         hostEdit.setText(current.weatherHost);
         keyEdit.setText(current.weatherKey);
         confirmExitCheck.setChecked(current.confirmExit);
+        hourlyAnnouncementCheck.setChecked(current.hourlyAnnouncementEnabled);
+        hourlyQuietNightCheck.setChecked(current.hourlyAnnouncementQuietNight);
         nightDimCheck.setChecked(current.nightDimEnabled);
         burnInCheck.setChecked(current.burnInProtectionEnabled);
         indoorCheck.setChecked(current.indoorEnabled);
@@ -222,6 +248,7 @@ public final class SettingsActivity extends Activity {
                 lunarCheck.isChecked(),
                 almanacCheck.isChecked(),
                 wifiCheck.isChecked(),
+                orientationValue(orientationSpinner.getSelectedItemPosition()),
                 fontSpinner.getSelectedItemPosition(),
                 refreshValue(refreshSpinner.getSelectedItemPosition()),
                 current.cityName,
@@ -233,6 +260,8 @@ public final class SettingsActivity extends Activity {
                 keyEdit.getText().toString().trim(),
                 backupPackage,
                 confirmExitCheck.isChecked(),
+                hourlyAnnouncementCheck.isChecked(),
+                hourlyQuietNightCheck.isChecked(),
                 nightDimCheck.isChecked(),
                 burnInCheck.isChecked(),
                 indoorCheck.isChecked(),
@@ -241,6 +270,14 @@ public final class SettingsActivity extends Activity {
         store.saveSettings(settings);
         Toast.makeText(this, R.string.settings_saved, Toast.LENGTH_SHORT).show();
         finish();
+    }
+
+    private void testHourlyAnnouncement() {
+        if (hourlyAnnouncer == null) {
+            hourlyAnnouncer = new HourlyAnnouncer(this, store);
+        }
+        hourlyAnnouncer.announceNow(java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY));
+        Toast.makeText(this, R.string.settings_hourly_test_started, Toast.LENGTH_SHORT).show();
     }
 
     private void showHomeGuide() {
@@ -391,6 +428,18 @@ public final class SettingsActivity extends Activity {
         if (AppSettings.THEME_DARK.equals(theme)) return 1;
         if (AppSettings.THEME_MONO.equals(theme)) return 2;
         if (AppSettings.THEME_EINK.equals(theme)) return 3;
+        return 0;
+    }
+
+    private String orientationValue(int index) {
+        if (index == 1) return AppSettings.ORIENTATION_PORTRAIT;
+        if (index == 2) return AppSettings.ORIENTATION_LANDSCAPE;
+        return AppSettings.ORIENTATION_SYSTEM;
+    }
+
+    private int orientationIndex(String orientationMode) {
+        if (AppSettings.ORIENTATION_PORTRAIT.equals(orientationMode)) return 1;
+        if (AppSettings.ORIENTATION_LANDSCAPE.equals(orientationMode)) return 2;
         return 0;
     }
 

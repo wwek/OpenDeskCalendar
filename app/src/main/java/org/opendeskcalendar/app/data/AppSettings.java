@@ -7,6 +7,9 @@ public final class AppSettings {
     public static final String THEME_EINK = "eink";
     public static final String WEATHER_PROVIDER_OPEN_METEO = "open_meteo";
     public static final String WEATHER_PROVIDER_QWEATHER = "qweather";
+    public static final String ORIENTATION_SYSTEM = "system";
+    public static final String ORIENTATION_PORTRAIT = "portrait";
+    public static final String ORIENTATION_LANDSCAPE = "landscape";
 
     public final String theme;
     public final boolean showSeconds;
@@ -17,6 +20,7 @@ public final class AppSettings {
     public final boolean showLunar;
     public final boolean showAlmanac;
     public final boolean showWifi;
+    public final String orientationMode;
     public final int fontScale;
     public final int weatherRefreshMinutes;
     public final String cityName;
@@ -28,6 +32,8 @@ public final class AppSettings {
     public final String weatherKey;
     public final String backupLauncherPackage;
     public final boolean confirmExit;
+    public final boolean hourlyAnnouncementEnabled;
+    public final boolean hourlyAnnouncementQuietNight;
     public final boolean nightDimEnabled;
     public final boolean burnInProtectionEnabled;
     public final boolean indoorEnabled;
@@ -44,6 +50,7 @@ public final class AppSettings {
             boolean showLunar,
             boolean showAlmanac,
             boolean showWifi,
+            String orientationMode,
             int fontScale,
             int weatherRefreshMinutes,
             String cityName,
@@ -55,6 +62,8 @@ public final class AppSettings {
             String weatherKey,
             String backupLauncherPackage,
             boolean confirmExit,
+            boolean hourlyAnnouncementEnabled,
+            boolean hourlyAnnouncementQuietNight,
             boolean nightDimEnabled,
             boolean burnInProtectionEnabled,
             boolean indoorEnabled,
@@ -69,6 +78,7 @@ public final class AppSettings {
         this.showLunar = showLunar;
         this.showAlmanac = showAlmanac;
         this.showWifi = showWifi;
+        this.orientationMode = orientationMode;
         this.fontScale = fontScale;
         this.weatherRefreshMinutes = weatherRefreshMinutes;
         this.cityName = cityName;
@@ -80,6 +90,8 @@ public final class AppSettings {
         this.weatherKey = weatherKey;
         this.backupLauncherPackage = backupLauncherPackage;
         this.confirmExit = confirmExit;
+        this.hourlyAnnouncementEnabled = hourlyAnnouncementEnabled;
+        this.hourlyAnnouncementQuietNight = hourlyAnnouncementQuietNight;
         this.nightDimEnabled = nightDimEnabled;
         this.burnInProtectionEnabled = burnInProtectionEnabled;
         this.indoorEnabled = indoorEnabled;

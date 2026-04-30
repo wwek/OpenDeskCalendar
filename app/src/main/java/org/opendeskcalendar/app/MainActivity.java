@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -14,6 +15,7 @@ import android.view.WindowManager;
 import android.widget.Toast;
 
 import org.opendeskcalendar.app.R;
+import org.opendeskcalendar.app.audio.HourlyAnnouncer;
 import org.opendeskcalendar.app.calendar.CalendarRepository;
 import org.opendeskcalendar.app.calendar.HolidayRepository;
 import org.opendeskcalendar.app.data.AppSettings;
@@ -36,6 +38,7 @@ public class MainActivity extends Activity implements DashboardView.Listener {
     private PreferencesStore store;
     private CalendarRepository calendarRepository;
     private DashboardView dashboardView;
+    private HourlyAnnouncer hourlyAnnouncer;
     private AppSettings settings;
     private WeatherSnapshot weather;
     private IndoorSnapshot indoor;
@@ -56,6 +59,15 @@ public class MainActivity extends Activity implements DashboardView.Listener {
         @Override
         public void run() {
             refreshDashboard();
+        }
+    };
+    private final Runnable hourlyAnnouncement = new Runnable() {
+        @Override
+        public void run() {
+            if (settings != null && hourlyAnnouncer != null) {
+                hourlyAnnouncer.announceIfNeeded(settings, Calendar.getInstance());
+            }
+            scheduleHourlyAnnouncement();
         }
     };
 
@@ -85,6 +97,7 @@ public class MainActivity extends Activity implements DashboardView.Listener {
         refreshIndoorIfNeeded(indoorSettingsChanged(previous, settings, indoor));
         handler.removeCallbacks(tick);
         handler.post(tick);
+        scheduleHourlyAnnouncement();
         handler.postDelayed(deferredDashboardRefresh, 600L);
     }
 
@@ -92,7 +105,20 @@ public class MainActivity extends Activity implements DashboardView.Listener {
     protected void onPause() {
         super.onPause();
         handler.removeCallbacks(tick);
+        handler.removeCallbacks(hourlyAnnouncement);
         handler.removeCallbacks(deferredDashboardRefresh);
+        if (hourlyAnnouncer != null) {
+            hourlyAnnouncer.stop();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (hourlyAnnouncer != null) {
+            hourlyAnnouncer.shutdown();
+            hourlyAnnouncer = null;
+        }
     }
 
     @Override
@@ -165,6 +191,7 @@ public class MainActivity extends Activity implements DashboardView.Listener {
 
     private void loadState() {
         settings = store.getSettings();
+        applyOrientation();
         if (settings.keepScreenOn) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         } else {
@@ -175,12 +202,54 @@ public class MainActivity extends Activity implements DashboardView.Listener {
         indoor = store.readIndoor();
     }
 
+    private void applyOrientation() {
+        if (AppSettings.ORIENTATION_LANDSCAPE.equals(settings.orientationMode)) {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+            return;
+        }
+        if (AppSettings.ORIENTATION_PORTRAIT.equals(settings.orientationMode)) {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
+            return;
+        }
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER);
+    }
+
     private void refreshDashboard() {
         if (settings == null) {
             return;
         }
         MonthGrid month = calendarRepository.buildMonth(visibleMonth, settings);
         dashboardView.update(settings, weather, indoor, month, NetworkState.from(this), selectedDate);
+    }
+
+    private void scheduleHourlyAnnouncement() {
+        handler.removeCallbacks(hourlyAnnouncement);
+        if (settings == null || !settings.hourlyAnnouncementEnabled) {
+            shutdownHourlyAnnouncer();
+            return;
+        }
+        if (hourlyAnnouncer == null) {
+            hourlyAnnouncer = new HourlyAnnouncer(this, store);
+        }
+        handler.postDelayed(hourlyAnnouncement, nextHourDelayMillis());
+    }
+
+    private void shutdownHourlyAnnouncer() {
+        if (hourlyAnnouncer == null) {
+            return;
+        }
+        hourlyAnnouncer.shutdown();
+        hourlyAnnouncer = null;
+    }
+
+    private static long nextHourDelayMillis() {
+        long nowMillis = System.currentTimeMillis();
+        Calendar next = Calendar.getInstance();
+        next.add(Calendar.HOUR_OF_DAY, 1);
+        next.set(Calendar.MINUTE, 0);
+        next.set(Calendar.SECOND, 0);
+        next.set(Calendar.MILLISECOND, 0);
+        return Math.max(1000L, next.getTimeInMillis() - nowMillis);
     }
 
     private static Calendar dateFrom(CalendarDay day) {
