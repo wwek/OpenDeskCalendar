@@ -17,18 +17,22 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.zip.GZIPInputStream;
 
 public final class WeatherService {
     public WeatherSnapshot fetch(AppSettings settings) throws Exception {
+        if (AppSettings.WEATHER_PROVIDER_QWEATHER.equals(settings.weatherProvider)) {
+            return fetchQweather(settings);
+        }
         String endpoint = buildForecastUrl(settings);
-        HttpURLConnection connection = open(endpoint);
+        HttpURLConnection connection = open(endpoint, settings);
         try {
             int code = connection.getResponseCode();
             if (code < 200 || code >= 300) {
                 throw new IOException("天气接口失败，HTTP " + code);
             }
-            String raw = readAll(connection.getInputStream());
-            return parseForecast(raw, settings);
+            String raw = readResponse(connection);
+            return parseOpenMeteoForecast(raw, settings);
         } finally {
             connection.disconnect();
         }
@@ -43,13 +47,13 @@ public final class WeatherService {
                 .appendQueryParameter("format", "json")
                 .build()
                 .toString();
-        HttpURLConnection connection = open(endpoint);
+        HttpURLConnection connection = open(endpoint, null);
         try {
             int code = connection.getResponseCode();
             if (code < 200 || code >= 300) {
                 throw new IOException("城市搜索失败，HTTP " + code);
             }
-            JSONObject root = new JSONObject(readAll(connection.getInputStream()));
+            JSONObject root = new JSONObject(readResponse(connection));
             JSONArray results = root.optJSONArray("results");
             ArrayList<CityResult> cities = new ArrayList<CityResult>();
             if (results == null) {
@@ -70,7 +74,26 @@ public final class WeatherService {
         }
     }
 
-    private String buildForecastUrl(AppSettings settings) {
+    private WeatherSnapshot fetchQweather(AppSettings settings) throws Exception {
+        String nowRaw = fetchRaw(buildQweatherWeatherUrl(settings, "now"), settings);
+        String dailyRaw = fetchRaw(buildQweatherWeatherUrl(settings, "3d"), settings);
+        return parseQweatherForecast(nowRaw, dailyRaw, settings);
+    }
+
+    private String fetchRaw(String endpoint, AppSettings settings) throws IOException {
+        HttpURLConnection connection = open(endpoint, settings);
+        try {
+            int code = connection.getResponseCode();
+            if (code < 200 || code >= 300) {
+                throw new IOException("天气接口失败，HTTP " + code);
+            }
+            return readResponse(connection);
+        } finally {
+            connection.disconnect();
+        }
+    }
+
+    private String buildForecastUrl(AppSettings settings) throws IOException {
         String host = settings.weatherHost == null || settings.weatherHost.length() == 0
                 ? "https://api.open-meteo.com/v1/forecast"
                 : settings.weatherHost;
@@ -87,15 +110,49 @@ public final class WeatherService {
         return builder.build().toString();
     }
 
-    private HttpURLConnection open(String endpoint) throws IOException {
+    private String buildQweatherWeatherUrl(AppSettings settings, String days) throws IOException {
+        String host = settings.weatherHost == null ? "" : settings.weatherHost.trim();
+        if (host.length() == 0) {
+            throw new IOException("和风天气 Base API 未设置");
+        }
+        String key = settings.weatherKey == null ? "" : settings.weatherKey.trim();
+        if (key.length() == 0) {
+            throw new IOException("和风天气 Key 未设置");
+        }
+        if (!host.startsWith("http://") && !host.startsWith("https://")) {
+            host = "https://" + host;
+        }
+        while (host.endsWith("/")) {
+            host = host.substring(0, host.length() - 1);
+        }
+        return Uri.parse(host + "/v7/weather/" + days)
+                .buildUpon()
+                .appendQueryParameter("location", String.format(Locale.US, "%.2f,%.2f", settings.longitude, settings.latitude))
+                .appendQueryParameter("lang", "zh")
+                .appendQueryParameter("unit", "m")
+                .build()
+                .toString();
+    }
+
+    private HttpURLConnection open(String endpoint, AppSettings settings) throws IOException {
         HttpURLConnection connection = (HttpURLConnection) new URL(endpoint).openConnection();
         connection.setConnectTimeout(10000);
         connection.setReadTimeout(12000);
         connection.setRequestProperty("User-Agent", "OpenDeskCalendar/0.1");
+        if (settings != null && AppSettings.WEATHER_PROVIDER_QWEATHER.equals(settings.weatherProvider)) {
+            String key = settings.weatherKey == null ? "" : settings.weatherKey.trim();
+            if (key.length() > 0) {
+                if (key.indexOf('.') >= 0) {
+                    connection.setRequestProperty("Authorization", "Bearer " + key);
+                } else {
+                    connection.setRequestProperty("X-QW-Api-Key", key);
+                }
+            }
+        }
         return connection;
     }
 
-    private WeatherSnapshot parseForecast(String raw, AppSettings settings) throws Exception {
+    private WeatherSnapshot parseOpenMeteoForecast(String raw, AppSettings settings) throws Exception {
         JSONObject root = new JSONObject(raw);
         JSONObject current = root.getJSONObject("current");
         JSONObject daily = root.getJSONObject("daily");
@@ -130,6 +187,57 @@ public final class WeatherService {
                 forecast);
     }
 
+    private WeatherSnapshot parseQweatherForecast(String nowRaw, String dailyRaw, AppSettings settings) throws Exception {
+        JSONObject nowRoot = new JSONObject(nowRaw);
+        String resultCode = nowRoot.optString("code");
+        if (!"200".equals(resultCode)) {
+            throw new IOException("和风天气实时接口失败，code " + resultCode);
+        }
+        JSONObject dailyRoot = new JSONObject(dailyRaw);
+        resultCode = dailyRoot.optString("code");
+        if (!"200".equals(resultCode)) {
+            throw new IOException("和风天气预报接口失败，code " + resultCode);
+        }
+        JSONObject now = nowRoot.getJSONObject("now");
+        JSONArray daily = dailyRoot.getJSONArray("daily");
+        if (daily.length() == 0) {
+            throw new IOException("和风天气接口未返回逐日预报");
+        }
+        ArrayList<ForecastDay> forecast = new ArrayList<ForecastDay>();
+        for (int i = 0; i < Math.min(3, daily.length()); i++) {
+            JSONObject day = daily.getJSONObject(i);
+            String condition = day.optString("textDay", day.optString("textNight", "阴"));
+            int low = parseInt(day.optString("tempMin"), 0);
+            int high = parseInt(day.optString("tempMax"), low);
+            forecast.add(new ForecastDay(
+                    i == 0 ? "今天" : (i == 1 ? "明天" : "后天"),
+                    day.optString("fxDate"),
+                    condition,
+                    low,
+                    high,
+                    parseInt(day.optString("iconDay"), -1)));
+        }
+
+        return new WeatherSnapshot(
+                settings.displayCity(),
+                now.optString("text", "阴"),
+                parseInt(now.optString("temp"), 0),
+                parseInt(now.optString("humidity"), 0),
+                qweatherWind(now.optString("windDir"), now.optString("windScale")),
+                System.currentTimeMillis(),
+                false,
+                forecast);
+    }
+
+    private static String readResponse(HttpURLConnection connection) throws IOException {
+        InputStream stream = connection.getInputStream();
+        String encoding = connection.getHeaderField("Content-Encoding");
+        if (encoding != null && encoding.toLowerCase(Locale.US).contains("gzip")) {
+            stream = new GZIPInputStream(stream);
+        }
+        return readAll(stream);
+    }
+
     private static String readAll(InputStream stream) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
         StringBuilder builder = new StringBuilder();
@@ -139,6 +247,27 @@ public final class WeatherService {
         }
         reader.close();
         return builder.toString();
+    }
+
+    private static String qweatherWind(String direction, String scale) {
+        if (direction.length() == 0) {
+            direction = "风";
+        }
+        if (scale.length() == 0) {
+            return direction;
+        }
+        return direction + " " + scale + "级";
+    }
+
+    private static int parseInt(String value, int fallback) {
+        if (value == null || value.length() == 0) {
+            return fallback;
+        }
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            return fallback;
+        }
     }
 
     public static String condition(int code) {

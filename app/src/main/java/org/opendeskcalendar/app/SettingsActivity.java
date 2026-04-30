@@ -39,6 +39,7 @@ public final class SettingsActivity extends Activity {
     private Spinner themeSpinner;
     private Spinner fontSpinner;
     private Spinner refreshSpinner;
+    private Spinner providerSpinner;
     private CheckBox secondsCheck;
     private CheckBox hour24Check;
     private CheckBox mondayCheck;
@@ -109,8 +110,10 @@ public final class SettingsActivity extends Activity {
         Button cityButton = button(getString(R.string.modify));
         cityButton.setOnClickListener(v -> startActivity(new Intent(this, CitySettingsActivity.class)));
         root.addView(row(getString(R.string.settings_city), cityValue, cityButton));
+        providerSpinner = spinner(getResources().getStringArray(R.array.weather_provider_names));
+        root.addView(row(getString(R.string.settings_weather_provider), providerSpinner));
         hostEdit = edit(getString(R.string.settings_host_hint));
-        root.addView(row("Host", hostEdit));
+        root.addView(row(getString(R.string.settings_weather_base_api), hostEdit));
         keyEdit = edit(getString(R.string.settings_key_hint));
         keyEdit.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
         root.addView(row("Key", keyEdit));
@@ -195,6 +198,7 @@ public final class SettingsActivity extends Activity {
         wifiCheck.setChecked(current.showWifi);
         fontSpinner.setSelection(current.fontScale);
         refreshSpinner.setSelection(refreshIndex(current.weatherRefreshMinutes));
+        providerSpinner.setSelection(providerIndex(current.weatherProvider));
         hostEdit.setText(current.weatherHost);
         keyEdit.setText(current.weatherKey);
         confirmExitCheck.setChecked(current.confirmExit);
@@ -224,6 +228,7 @@ public final class SettingsActivity extends Activity {
                 current.districtName,
                 current.latitude,
                 current.longitude,
+                providerValue(providerSpinner.getSelectedItemPosition()),
                 hostEdit.getText().toString().trim(),
                 keyEdit.getText().toString().trim(),
                 backupPackage,
@@ -399,6 +404,16 @@ public final class SettingsActivity extends Activity {
         if (minutes <= 30) return 0;
         if (minutes >= 120) return 2;
         return 1;
+    }
+
+    private String providerValue(int index) {
+        if (index == 1) return AppSettings.WEATHER_PROVIDER_QWEATHER;
+        return AppSettings.WEATHER_PROVIDER_OPEN_METEO;
+    }
+
+    private int providerIndex(String provider) {
+        if (AppSettings.WEATHER_PROVIDER_QWEATHER.equals(provider)) return 1;
+        return 0;
     }
 
     private int dp(int value) {

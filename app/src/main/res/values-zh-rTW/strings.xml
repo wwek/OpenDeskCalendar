@@ -19,8 +19,10 @@
     <string name="settings_font_size">字級</string>
     <string name="settings_section_weather">天氣</string>
     <string name="settings_city">城市</string>
-    <string name="settings_host_hint">Open-Meteo 預設 Host</string>
-    <string name="settings_key_hint">選填 API Key</string>
+    <string name="settings_weather_provider">天氣源</string>
+    <string name="settings_weather_base_api">Base API</string>
+    <string name="settings_host_hint">Open-Meteo Endpoint 或和風 Base API</string>
+    <string name="settings_key_hint">Open-Meteo Key 或和風 API Key/JWT</string>
     <string name="settings_refresh_rate">重新整理頻率</string>
     <string name="settings_section_indoor">室內溫濕度</string>
     <string name="settings_indoor_enabled">啟用室內感測器</string>
@@ -111,6 +113,10 @@
         <item>30 分鐘</item>
         <item>60 分鐘</item>
         <item>120 分鐘</item>
+    </string-array>
+    <string-array name="weather_provider_names">
+        <item>Open-Meteo</item>
+        <item>和風天氣</item>
     </string-array>
     <string-array name="system_menu_items">
         <item>開啟系統網路設定</item>

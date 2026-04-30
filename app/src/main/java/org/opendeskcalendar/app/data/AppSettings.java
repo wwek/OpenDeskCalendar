@@ -5,6 +5,8 @@ public final class AppSettings {
     public static final String THEME_DARK = "dark";
     public static final String THEME_MONO = "mono";
     public static final String THEME_EINK = "eink";
+    public static final String WEATHER_PROVIDER_OPEN_METEO = "open_meteo";
+    public static final String WEATHER_PROVIDER_QWEATHER = "qweather";
 
     public final String theme;
     public final boolean showSeconds;
@@ -21,6 +23,7 @@ public final class AppSettings {
     public final String districtName;
     public final double latitude;
     public final double longitude;
+    public final String weatherProvider;
     public final String weatherHost;
     public final String weatherKey;
     public final String backupLauncherPackage;
@@ -47,6 +50,7 @@ public final class AppSettings {
             String districtName,
             double latitude,
             double longitude,
+            String weatherProvider,
             String weatherHost,
             String weatherKey,
             String backupLauncherPackage,
@@ -71,6 +75,7 @@ public final class AppSettings {
         this.districtName = districtName;
         this.latitude = latitude;
         this.longitude = longitude;
+        this.weatherProvider = weatherProvider;
         this.weatherHost = weatherHost;
         this.weatherKey = weatherKey;
         this.backupLauncherPackage = backupLauncherPackage;

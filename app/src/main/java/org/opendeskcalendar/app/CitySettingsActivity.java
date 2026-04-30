@@ -165,6 +165,7 @@ public final class CitySettingsActivity extends Activity {
                 district,
                 lat,
                 lon,
+                current.weatherProvider,
                 current.weatherHost,
                 current.weatherKey,
                 current.backupLauncherPackage,

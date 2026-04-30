@@ -32,6 +32,7 @@ public final class PreferencesStore {
     private static final String KEY_DISTRICT = "district";
     private static final String KEY_LAT = "lat";
     private static final String KEY_LON = "lon";
+    private static final String KEY_PROVIDER = "weather_provider";
     private static final String KEY_HOST = "host";
     private static final String KEY_KEY = "api_key";
     private static final String KEY_BACKUP = "backup_launcher";
@@ -72,6 +73,7 @@ public final class PreferencesStore {
                 preferences.getString(KEY_DISTRICT, context.getString(R.string.default_district)),
                 Double.longBitsToDouble(preferences.getLong(KEY_LAT, Double.doubleToLongBits(39.9593d))),
                 Double.longBitsToDouble(preferences.getLong(KEY_LON, Double.doubleToLongBits(116.2985d))),
+                preferences.getString(KEY_PROVIDER, AppSettings.WEATHER_PROVIDER_OPEN_METEO),
                 preferences.getString(KEY_HOST, ""),
                 preferences.getString(KEY_KEY, ""),
                 preferences.getString(KEY_BACKUP, ""),
@@ -100,6 +102,7 @@ public final class PreferencesStore {
                 .putString(KEY_DISTRICT, safe(settings.districtName))
                 .putLong(KEY_LAT, Double.doubleToLongBits(settings.latitude))
                 .putLong(KEY_LON, Double.doubleToLongBits(settings.longitude))
+                .putString(KEY_PROVIDER, safe(settings.weatherProvider))
                 .putString(KEY_HOST, safe(settings.weatherHost))
                 .putString(KEY_KEY, safe(settings.weatherKey))
                 .putString(KEY_BACKUP, safe(settings.backupLauncherPackage))

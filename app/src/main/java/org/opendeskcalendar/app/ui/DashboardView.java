@@ -1,7 +1,10 @@
 package org.opendeskcalendar.app.ui;
 
 import android.content.Context;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Handler;
@@ -60,6 +63,8 @@ public final class DashboardView extends FrameLayout {
     private String transientMessage = "";
     private long transientUntil = 0L;
     private int lastOrientation = 0;
+    private static final int ICON_SETTINGS = 1;
+    private static final int ICON_WIFI = 2;
 
     public DashboardView(Context context) {
         super(context);
@@ -201,24 +206,29 @@ public final class DashboardView extends FrameLayout {
 
     private View buildLandscape() {
         LinearLayout root = vertical();
-        root.addView(buildTopBar(), new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, dp(46)));
-        root.addView(divider(), new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, dp(1)));
-
         LinearLayout body = horizontal();
         LinearLayout left = vertical();
         left.addView(buildTimeSection(false), weighted(1.35f));
         left.addView(divider(), new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, dp(1)));
         left.addView(buildWeatherSection(), weighted(1.05f));
         left.addView(divider(), new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, dp(1)));
-        left.addView(buildForecastSection(false), weighted(1.20f));
-        body.addView(left, new LinearLayout.LayoutParams(0, LayoutParams.MATCH_PARENT, 0.40f));
+        left.addView(buildLandscapeForecastSection(), weighted(1.20f));
+        body.addView(left, new LinearLayout.LayoutParams(0, LayoutParams.MATCH_PARENT, 0.38f));
         body.addView(divider(), new LinearLayout.LayoutParams(dp(1), LayoutParams.MATCH_PARENT));
-        body.addView(buildCalendarSection(false), new LinearLayout.LayoutParams(0, LayoutParams.MATCH_PARENT, 0.60f));
+        body.addView(buildLandscapeCalendarColumn(), new LinearLayout.LayoutParams(0, LayoutParams.MATCH_PARENT, 0.62f));
 
         root.addView(body, weighted(1f));
-        root.addView(divider(), new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, dp(1)));
-        root.addView(buildBottomSection(false), new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, dp(56)));
         return root;
+    }
+
+    private View buildLandscapeCalendarColumn() {
+        LinearLayout section = vertical();
+        section.addView(buildCalendarSection(true, true), new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, 0, 1f));
+        if (settings.showAlmanac) {
+            section.addView(divider(), new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, dp(1)));
+            section.addView(buildAlmanacSection(), new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, dp(52)));
+        }
+        return section;
     }
 
     private View buildTopBar() {
@@ -240,10 +250,8 @@ public final class DashboardView extends FrameLayout {
         });
         bar.addView(city, new LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f));
 
-        TextView settingsButton = label(getResources().getString(R.string.settings_title), 16, palette.secondary, false);
-        settingsButton.setSingleLine(true);
-        settingsButton.setGravity(Gravity.CENTER);
-        settingsButton.setPadding(dp(8), dp(4), dp(8), dp(4));
+        IconButton settingsButton = new IconButton(getContext(), ICON_SETTINGS, palette.secondary);
+        settingsButton.setContentDescription(getResources().getString(R.string.settings_title));
         settingsButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -252,21 +260,29 @@ public final class DashboardView extends FrameLayout {
                 }
             }
         });
-        bar.addView(settingsButton, new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+        bar.addView(settingsButton, new LinearLayout.LayoutParams(dp(56), LayoutParams.MATCH_PARENT));
 
-        TextView state = label(settings.showWifi ? networkState.label : "", 17, palette.secondary, false);
-        state.setSingleLine(true);
-        state.setGravity(Gravity.END);
-        state.setOnLongClickListener(new OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View view) {
-                if (listener != null) {
-                    listener.onOpenSystemMenu();
+        if (settings.showWifi) {
+            int wifiColor = networkState.connected ? palette.secondary : palette.warning;
+            IconButton state = new IconButton(getContext(), ICON_WIFI, wifiColor);
+            state.setContentDescription(networkState.label);
+            state.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    showMessage(networkState.label);
                 }
-                return true;
-            }
-        });
-        bar.addView(state, new LinearLayout.LayoutParams(dp(112), LayoutParams.WRAP_CONTENT));
+            });
+            state.setOnLongClickListener(new OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View view) {
+                    if (listener != null) {
+                        listener.onOpenSystemMenu();
+                    }
+                    return true;
+                }
+            });
+            bar.addView(state, new LinearLayout.LayoutParams(dp(56), LayoutParams.MATCH_PARENT));
+        }
         return bar;
     }
 
@@ -335,10 +351,17 @@ public final class DashboardView extends FrameLayout {
         });
 
         LinearLayout left = vertical();
-        TextView title = label(weatherSymbol(weather.condition) + "  " + localize(weather.city), 18, palette.primary, true);
+        LinearLayout titleRow = horizontal();
+        titleRow.setGravity(Gravity.CENTER_VERTICAL);
+        WeatherIconView currentIcon = new WeatherIconView(getContext(), weather.condition, weatherIconColor(weather.condition));
+        LinearLayout.LayoutParams currentIconParams = new LinearLayout.LayoutParams(dp(28), dp(28));
+        currentIconParams.rightMargin = dp(8);
+        titleRow.addView(currentIcon, currentIconParams);
+        TextView title = label(localize(weather.city), 18, palette.primary, true);
         title.setSingleLine(true);
         title.setEllipsize(TextUtils.TruncateAt.END);
-        left.addView(title, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+        titleRow.addView(title, new LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f));
+        left.addView(titleRow, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
         TextView temp = label(weather.temperatureCelsius + "°C", 34, palette.primary, true);
         temp.setIncludeFontPadding(false);
         left.addView(temp, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
@@ -346,9 +369,6 @@ public final class DashboardView extends FrameLayout {
 
         LinearLayout right = vertical();
         right.setGravity(Gravity.CENTER_VERTICAL);
-        TextView cache = label(weather.fromCache ? getResources().getString(R.string.dashboard_cache) : "", 14, palette.warning, true);
-        cache.setGravity(Gravity.END);
-        right.addView(cache, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
         TextView humidity = label(getResources().getString(R.string.dashboard_humidity, weather.humidityPercent), 14, palette.secondary, false);
         humidity.setGravity(Gravity.END);
         humidity.setSingleLine(true);
@@ -387,6 +407,54 @@ public final class DashboardView extends FrameLayout {
         return section;
     }
 
+    private View buildLandscapeForecastSection() {
+        LinearLayout section = vertical();
+        section.setGravity(Gravity.CENTER_VERTICAL);
+        section.setPadding(dp(16), dp(4), dp(16), dp(4));
+        TextView title = label(getResources().getString(R.string.dashboard_forecast_title), 15, palette.secondary, true);
+        title.setSingleLine(true);
+        section.addView(title, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+
+        LinearLayout row = horizontal();
+        row.setGravity(Gravity.CENTER);
+        int count = Math.min(3, weather.forecast.size());
+        for (int i = 0; i < count; i++) {
+            row.addView(buildLandscapeForecastDay(weather.forecast.get(i)), new LinearLayout.LayoutParams(0, LayoutParams.MATCH_PARENT, 1f));
+        }
+        section.addView(row, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, 0, 1f));
+        return section;
+    }
+
+    private View buildLandscapeForecastDay(ForecastDay day) {
+        LinearLayout item = vertical();
+        item.setGravity(Gravity.CENTER);
+        item.setPadding(dp(2), 0, dp(2), 0);
+
+        TextView label = label(localize(day.label), 13, palette.primary, true);
+        label.setGravity(Gravity.CENTER);
+        label.setSingleLine(true);
+        item.addView(label, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+
+        LinearLayout detail = horizontal();
+        detail.setGravity(Gravity.CENTER);
+        WeatherIconView symbol = new WeatherIconView(getContext(), day.condition, weatherIconColor(day.condition));
+        LinearLayout.LayoutParams symbolParams = new LinearLayout.LayoutParams(dp(24), dp(22));
+        symbolParams.rightMargin = dp(5);
+        detail.addView(symbol, symbolParams);
+
+        TextView condition = label(localize(day.condition), 11, palette.secondary, false);
+        condition.setSingleLine(true);
+        condition.setEllipsize(TextUtils.TruncateAt.END);
+        detail.addView(condition, new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+        item.addView(detail, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+
+        TextView temp = label(day.tempRange(), 11, palette.secondary, false);
+        temp.setGravity(Gravity.CENTER);
+        temp.setSingleLine(true);
+        item.addView(temp, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+        return item;
+    }
+
     private View buildForecastDay(ForecastDay day, boolean compact) {
         LinearLayout item = vertical();
         item.setGravity(Gravity.CENTER);
@@ -397,10 +465,11 @@ public final class DashboardView extends FrameLayout {
         label.setSingleLine(true);
         item.addView(label, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 
-        TextView symbol = label(weatherSymbol(day.condition), compact ? 22 : 29, palette.accent, true);
-        symbol.setGravity(Gravity.CENTER);
-        symbol.setIncludeFontPadding(false);
-        item.addView(symbol, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+        WeatherIconView symbol = new WeatherIconView(getContext(), day.condition, weatherIconColor(day.condition));
+        LinearLayout.LayoutParams symbolParams = new LinearLayout.LayoutParams(compact ? dp(30) : dp(38), compact ? dp(26) : dp(34));
+        symbolParams.topMargin = compact ? dp(1) : dp(2);
+        symbolParams.bottomMargin = compact ? dp(1) : dp(2);
+        item.addView(symbol, symbolParams);
 
         TextView condition = label(localize(day.condition), compact ? 12 : 15, palette.secondary, false);
         condition.setGravity(Gravity.CENTER);
@@ -416,36 +485,60 @@ public final class DashboardView extends FrameLayout {
     }
 
     private View buildCalendarSection(boolean compact) {
+        return buildCalendarSection(compact, false);
+    }
+
+    private View buildCalendarSection(boolean compact, boolean inlineHeader) {
         LinearLayout section = vertical();
         section.setPadding(dp(12), compact ? dp(7) : dp(12), dp(12), compact ? dp(7) : dp(12));
 
+        Calendar now = Calendar.getInstance();
+        ChineseLunarCalendar.LunarDate lunar = ChineseLunarCalendar.fromSolar(
+                now.get(Calendar.YEAR), now.get(Calendar.MONTH) + 1, now.get(Calendar.DAY_OF_MONTH));
+        String lunarHeader = localize(lunar.monthName + lunar.dayName + "  " + ChineseLunarCalendar.ganzhiAnimal(lunar));
         TextView title = label(getResources().getString(R.string.format_month_title, month.year, month.month),
                 compact ? 19 : 22,
                 palette.primary,
                 true);
         title.setGravity(Gravity.CENTER);
         title.setSingleLine(true);
-        title.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (listener != null) {
-                    listener.onGoToToday();
+        bindCalendarTitleActions(title);
+        if (inlineHeader) {
+            FrameLayout header = new FrameLayout(getContext());
+            header.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (listener != null) {
+                        listener.onGoToToday();
+                    }
                 }
-            }
-        });
-        section.addView(title, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+            });
+            header.setOnLongClickListener(new OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View view) {
+                    if (listener != null) {
+                        listener.onOpenSystemMenu();
+                    }
+                    return true;
+                }
+            });
+            header.addView(title, matchFrame());
+            TextView lunarTitle = label(lunarHeader, 11, palette.secondary, false);
+            lunarTitle.setGravity(Gravity.CENTER_VERTICAL | Gravity.END);
+            lunarTitle.setSingleLine(true);
+            lunarTitle.setEllipsize(TextUtils.TruncateAt.END);
+            FrameLayout.LayoutParams lunarParams = new FrameLayout.LayoutParams(dp(210), LayoutParams.MATCH_PARENT, Gravity.END | Gravity.CENTER_VERTICAL);
+            header.addView(lunarTitle, lunarParams);
+            section.addView(header, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, dp(30)));
+        } else {
+            section.addView(title, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 
-        Calendar now = Calendar.getInstance();
-        ChineseLunarCalendar.LunarDate lunar = ChineseLunarCalendar.fromSolar(
-                now.get(Calendar.YEAR), now.get(Calendar.MONTH) + 1, now.get(Calendar.DAY_OF_MONTH));
-        TextView lunarTitle = label(localize(lunar.monthName + lunar.dayName + "  " + ChineseLunarCalendar.ganzhiAnimal(lunar)),
-                compact ? 12 : 14,
-                palette.secondary,
-                false);
-        lunarTitle.setGravity(Gravity.CENTER);
-        lunarTitle.setSingleLine(true);
-        lunarTitle.setEllipsize(TextUtils.TruncateAt.END);
-        section.addView(lunarTitle, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+            TextView lunarTitle = label(lunarHeader, compact ? 12 : 14, palette.secondary, false);
+            lunarTitle.setGravity(Gravity.CENTER);
+            lunarTitle.setSingleLine(true);
+            lunarTitle.setEllipsize(TextUtils.TruncateAt.END);
+            section.addView(lunarTitle, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+        }
 
         LinearLayout grid = vertical();
         grid.addView(buildWeekHeader(compact), new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, compact ? dp(22) : dp(28)));
@@ -463,6 +556,26 @@ public final class DashboardView extends FrameLayout {
         return section;
     }
 
+    private void bindCalendarTitleActions(View title) {
+        title.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (listener != null) {
+                    listener.onGoToToday();
+                }
+            }
+        });
+        title.setOnLongClickListener(new OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                if (listener != null) {
+                    listener.onOpenSystemMenu();
+                }
+                return true;
+            }
+        });
+    }
+
     private View buildWeekHeader(boolean compact) {
         String[] names = settings.weekStartsMonday
                 ? new String[]{"一", "二", "三", "四", "五", "六", "日"}
@@ -478,7 +591,7 @@ public final class DashboardView extends FrameLayout {
 
     private View buildDayCell(final CalendarDay day, boolean compact) {
         FrameLayout cell = new FrameLayout(getContext());
-        int padding = compact ? dp(1) : dp(3);
+        int padding = compact ? dp(1) : dp(4);
         cell.setPadding(padding, padding, padding, padding);
         cell.setBackground(dayBackground(day));
         cell.setOnClickListener(new OnClickListener() {
@@ -492,24 +605,25 @@ public final class DashboardView extends FrameLayout {
 
         LinearLayout texts = vertical();
         texts.setGravity(Gravity.CENTER);
-        TextView number = label(String.valueOf(day.day), compact ? 14 : 14, dayColor(day), true);
+        TextView number = label(String.valueOf(day.day), compact ? 13 : 15, dayColor(day), true);
         number.setGravity(Gravity.CENTER);
         number.setIncludeFontPadding(false);
-        texts.addView(number, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, 0, 1f));
+        texts.addView(number, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 
-        TextView lower = label(settings.showLunar && (!compact || day.inMonth) ? localize(day.lowerLabel()) : "",
-                compact ? 8 : 9,
+        boolean showLower = settings.showLunar;
+        TextView lower = label(showLower ? localize(day.lowerLabel()) : "",
+                compact ? 8 : 10,
                 day.inMonth ? palette.secondary : palette.muted,
                 false);
         lower.setGravity(Gravity.CENTER);
         lower.setSingleLine(true);
         lower.setEllipsize(TextUtils.TruncateAt.END);
         lower.setIncludeFontPadding(false);
-        texts.addView(lower, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, 0, 1f));
+        texts.addView(lower, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
         cell.addView(texts, matchFrame());
 
         if (day.holiday != null) {
-            TextView badge = label(localize(day.holiday.badge), compact ? 8 : 9, badgeColor(day), true);
+            TextView badge = label(localize(day.holiday.badge), compact ? 7 : 8, badgeColor(day), true);
             badge.setGravity(Gravity.END | Gravity.TOP);
             FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, Gravity.END | Gravity.TOP);
             cell.addView(badge, params);
@@ -517,16 +631,31 @@ public final class DashboardView extends FrameLayout {
         return cell;
     }
 
+    private View buildAlmanacSection() {
+        LinearLayout section = vertical();
+        section.setGravity(Gravity.CENTER_VERTICAL);
+        section.setPadding(dp(14), 0, dp(14), dp(6));
+        Calendar now = Calendar.getInstance();
+        TextView good = label(localize("宜：") + localize(AlmanacProvider.good(now)), 11, palette.secondary, false);
+        good.setGravity(Gravity.CENTER_VERTICAL);
+        good.setSingleLine(true);
+        good.setEllipsize(TextUtils.TruncateAt.END);
+        section.addView(good, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, 0, 1f));
+
+        TextView avoid = label(localize("忌：") + localize(AlmanacProvider.avoid(now)), 11, palette.secondary, false);
+        avoid.setGravity(Gravity.CENTER_VERTICAL);
+        avoid.setSingleLine(true);
+        avoid.setEllipsize(TextUtils.TruncateAt.END);
+        section.addView(avoid, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, 0, 1f));
+        return section;
+    }
+
     private View buildBottomSection(boolean compact) {
         LinearLayout section = compact ? vertical() : horizontal();
         section.setGravity(compact ? Gravity.CENTER_VERTICAL : Gravity.CENTER_VERTICAL);
         section.setPadding(dp(16), dp(5), dp(16), dp(5));
 
-        Date updated = new Date(weather.updatedAtMillis == 0L ? System.currentTimeMillis() : weather.updatedAtMillis);
-        String updateText = weather.fromCache
-                ? getResources().getString(R.string.dashboard_cached_at, updateFormat.format(updated))
-                : getResources().getString(R.string.dashboard_updated_at, updateFormat.format(updated));
-        TextView updatedAt = label(updateText, compact ? 11 : 15, palette.muted, false);
+        TextView updatedAt = label(updateText(), compact ? 11 : 15, palette.muted, false);
         updatedAt.setSingleLine(true);
         updatedAt.setEllipsize(TextUtils.TruncateAt.END);
         section.addView(updatedAt, new LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT, compact ? 0f : 0.35f));
@@ -550,6 +679,151 @@ public final class DashboardView extends FrameLayout {
             }
         }
         return section;
+    }
+
+    private String updateText() {
+        Date updated = new Date(weather.updatedAtMillis == 0L ? System.currentTimeMillis() : weather.updatedAtMillis);
+        return weather.fromCache
+                ? getResources().getString(R.string.dashboard_cached_at, updateFormat.format(updated))
+                : getResources().getString(R.string.dashboard_updated_at, updateFormat.format(updated));
+    }
+
+    private final class IconButton extends View {
+        private final int type;
+        private final int color;
+        private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final RectF rect = new RectF();
+
+        IconButton(Context context, int type, int color) {
+            super(context);
+            this.type = type;
+            this.color = color;
+            setFocusable(true);
+            setClickable(true);
+        }
+
+        @Override
+        protected void onDraw(Canvas canvas) {
+            super.onDraw(canvas);
+            paint.setColor(color);
+            paint.setStrokeWidth(dp(2.2f));
+            paint.setStrokeCap(Paint.Cap.ROUND);
+            paint.setStyle(Paint.Style.STROKE);
+            float cx = getWidth() / 2f;
+            float cy = getHeight() / 2f;
+            float size = Math.min(getWidth(), getHeight()) * 0.46f;
+            if (type == ICON_SETTINGS) {
+                drawSettingsIcon(canvas, cx, cy, size);
+            } else {
+                drawWifiIcon(canvas, cx, cy, size);
+            }
+        }
+
+        private void drawSettingsIcon(Canvas canvas, float cx, float cy, float size) {
+            float outer = size * 0.44f;
+            float ring = size * 0.31f;
+            for (int i = 0; i < 8; i++) {
+                double angle = Math.PI * i / 4d;
+                float innerX = cx + (float) Math.cos(angle) * ring;
+                float innerY = cy + (float) Math.sin(angle) * ring;
+                float outerX = cx + (float) Math.cos(angle) * outer;
+                float outerY = cy + (float) Math.sin(angle) * outer;
+                canvas.drawLine(innerX, innerY, outerX, outerY, paint);
+            }
+            canvas.drawCircle(cx, cy, size * 0.28f, paint);
+            canvas.drawCircle(cx, cy, size * 0.10f, paint);
+        }
+
+        private void drawWifiIcon(Canvas canvas, float cx, float cy, float size) {
+            float dotY = cy + size * 0.26f;
+            paint.setStyle(Paint.Style.FILL);
+            canvas.drawCircle(cx, dotY, size * 0.06f, paint);
+            paint.setStyle(Paint.Style.STROKE);
+            for (int i = 0; i < 3; i++) {
+                float radius = size * (0.24f + i * 0.18f);
+                rect.set(cx - radius, dotY - radius, cx + radius, dotY + radius);
+                canvas.drawArc(rect, 225f, 90f, false, paint);
+            }
+        }
+    }
+
+    private final class WeatherIconView extends View {
+        private final String condition;
+        private final int color;
+        private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final RectF rect = new RectF();
+
+        WeatherIconView(Context context, String condition, int color) {
+            super(context);
+            this.condition = condition == null ? "" : condition;
+            this.color = color;
+        }
+
+        @Override
+        protected void onDraw(Canvas canvas) {
+            super.onDraw(canvas);
+            paint.setColor(color);
+            paint.setStrokeWidth(dp(2.1f));
+            paint.setStrokeCap(Paint.Cap.ROUND);
+            paint.setStrokeJoin(Paint.Join.ROUND);
+            paint.setStyle(Paint.Style.STROKE);
+            float cx = getWidth() / 2f;
+            float cy = getHeight() / 2f;
+            float size = Math.min(getWidth(), getHeight()) * 0.78f;
+            if (isRain(condition)) {
+                drawCloud(canvas, cx, cy - size * 0.06f, size);
+                drawRain(canvas, cx, cy, size);
+            } else if (isSnow(condition)) {
+                drawCloud(canvas, cx, cy - size * 0.06f, size);
+                drawSnow(canvas, cx, cy, size);
+            } else if (isSunny(condition)) {
+                drawSun(canvas, cx, cy, size);
+            } else {
+                drawCloud(canvas, cx, cy, size);
+            }
+        }
+
+        private void drawSun(Canvas canvas, float cx, float cy, float size) {
+            float radius = size * 0.24f;
+            canvas.drawCircle(cx, cy, radius, paint);
+            float inner = size * 0.36f;
+            float outer = size * 0.50f;
+            for (int i = 0; i < 8; i++) {
+                double angle = Math.PI * i / 4d;
+                float x1 = cx + (float) Math.cos(angle) * inner;
+                float y1 = cy + (float) Math.sin(angle) * inner;
+                float x2 = cx + (float) Math.cos(angle) * outer;
+                float y2 = cy + (float) Math.sin(angle) * outer;
+                canvas.drawLine(x1, y1, x2, y2, paint);
+            }
+        }
+
+        private void drawCloud(Canvas canvas, float cx, float cy, float size) {
+            paint.setStyle(Paint.Style.FILL);
+            canvas.drawCircle(cx - size * 0.21f, cy + size * 0.10f, size * 0.17f, paint);
+            canvas.drawCircle(cx - size * 0.02f, cy - size * 0.03f, size * 0.25f, paint);
+            canvas.drawCircle(cx + size * 0.22f, cy + size * 0.09f, size * 0.19f, paint);
+            rect.set(cx - size * 0.38f, cy + size * 0.05f, cx + size * 0.40f, cy + size * 0.27f);
+            canvas.drawRoundRect(rect, size * 0.11f, size * 0.11f, paint);
+            paint.setStyle(Paint.Style.STROKE);
+        }
+
+        private void drawRain(Canvas canvas, float cx, float cy, float size) {
+            float top = cy + size * 0.34f;
+            for (int i = -1; i <= 1; i++) {
+                float x = cx + i * size * 0.20f;
+                canvas.drawLine(x + size * 0.04f, top, x - size * 0.04f, top + size * 0.20f, paint);
+            }
+        }
+
+        private void drawSnow(Canvas canvas, float cx, float cy, float size) {
+            float y = cy + size * 0.42f;
+            for (int i = -1; i <= 1; i++) {
+                float x = cx + i * size * 0.20f;
+                canvas.drawLine(x - size * 0.05f, y, x + size * 0.05f, y, paint);
+                canvas.drawLine(x, y - size * 0.05f, x, y + size * 0.05f, paint);
+            }
+        }
     }
 
     private TextView buildMessageView() {
@@ -640,15 +914,32 @@ public final class DashboardView extends FrameLayout {
         return view;
     }
 
-    private String weatherSymbol(String condition) {
+    private int weatherIconColor(String condition) {
         if (settings.isMonochrome()) {
-            return localize(condition);
+            return palette.primary;
         }
-        if ("晴".equals(condition)) return "☀";
-        if ("少云".equals(condition) || "多云".equals(condition)) return "☁";
-        if (condition != null && condition.indexOf("雨") >= 0) return localize("雨");
-        if (condition != null && condition.indexOf("雪") >= 0) return localize("雪");
-        return "☁";
+        if (isSunny(condition)) {
+            return 0xFFFFB020;
+        }
+        if (isRain(condition)) {
+            return palette.accent;
+        }
+        if (isSnow(condition)) {
+            return palette.primary;
+        }
+        return palette.secondary;
+    }
+
+    private boolean isSunny(String condition) {
+        return "晴".equals(condition);
+    }
+
+    private boolean isRain(String condition) {
+        return condition != null && condition.indexOf("雨") >= 0;
+    }
+
+    private boolean isSnow(String condition) {
+        return condition != null && condition.indexOf("雪") >= 0;
     }
 
     private String localize(String value) {

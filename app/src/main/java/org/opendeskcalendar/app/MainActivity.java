@@ -210,6 +210,7 @@ public class MainActivity extends Activity implements DashboardView.Listener {
                 || !same(previous.districtName, next.districtName)
                 || previous.latitude != next.latitude
                 || previous.longitude != next.longitude
+                || !same(previous.weatherProvider, next.weatherProvider)
                 || !same(previous.weatherHost, next.weatherHost)
                 || !same(previous.weatherKey, next.weatherKey);
     }

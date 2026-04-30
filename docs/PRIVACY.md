@@ -13,7 +13,7 @@ The app sends network requests only for:
 - Weather forecast refresh.
 - City search.
 
-Default endpoints are Open-Meteo APIs. Users can configure a custom weather host and optional key in settings.
+Default endpoints are Open-Meteo APIs. Users can select another supported weather provider and configure a custom weather Base API and optional key in settings.
 
 ## Local Storage
 
@@ -21,7 +21,7 @@ The app stores the following on device:
 
 - Display settings.
 - City name and latitude/longitude.
-- Optional custom weather host and key.
+- Optional weather provider, custom weather Base API, and key.
 - Last successful weather response cache.
 - Recent diagnostic errors.
 
