@@ -224,14 +224,14 @@ public class MainActivity extends Activity implements DashboardView.Listener {
 
     private void scheduleHourlyAnnouncement() {
         handler.removeCallbacks(hourlyAnnouncement);
-        if (settings == null || !settings.hourlyAnnouncementEnabled) {
+        if (settings == null || (!settings.hourlyAnnouncementEnabled && !settings.halfHourlyAnnouncementEnabled)) {
             shutdownHourlyAnnouncer();
             return;
         }
         if (hourlyAnnouncer == null) {
             hourlyAnnouncer = new HourlyAnnouncer(this, store);
         }
-        handler.postDelayed(hourlyAnnouncement, nextHourDelayMillis());
+        handler.postDelayed(hourlyAnnouncement, nextAnnouncementDelayMillis(settings));
     }
 
     private void shutdownHourlyAnnouncer() {
@@ -242,14 +242,27 @@ public class MainActivity extends Activity implements DashboardView.Listener {
         hourlyAnnouncer = null;
     }
 
-    private static long nextHourDelayMillis() {
+    private static long nextAnnouncementDelayMillis(AppSettings settings) {
         long nowMillis = System.currentTimeMillis();
+        long nextMillis = Long.MAX_VALUE;
+        if (settings.hourlyAnnouncementEnabled) {
+            nextMillis = Math.min(nextMillis, nextAnnouncementTimeMillis(0, nowMillis));
+        }
+        if (settings.halfHourlyAnnouncementEnabled) {
+            nextMillis = Math.min(nextMillis, nextAnnouncementTimeMillis(30, nowMillis));
+        }
+        return Math.max(1000L, nextMillis - nowMillis);
+    }
+
+    private static long nextAnnouncementTimeMillis(int minute, long nowMillis) {
         Calendar next = Calendar.getInstance();
-        next.add(Calendar.HOUR_OF_DAY, 1);
-        next.set(Calendar.MINUTE, 0);
+        next.set(Calendar.MINUTE, minute);
         next.set(Calendar.SECOND, 0);
         next.set(Calendar.MILLISECOND, 0);
-        return Math.max(1000L, next.getTimeInMillis() - nowMillis);
+        if (next.getTimeInMillis() <= nowMillis + 1000L) {
+            next.add(Calendar.HOUR_OF_DAY, 1);
+        }
+        return next.getTimeInMillis();
     }
 
     private static Calendar dateFrom(CalendarDay day) {

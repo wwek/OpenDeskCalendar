@@ -47,10 +47,15 @@
     <string name="settings_keep_screen_on">保持螢幕常亮</string>
     <string name="settings_show_wifi">顯示 Wi-Fi 狀態</string>
     <string name="settings_hourly_announcement">整點語音播報</string>
+    <string name="settings_half_hourly_announcement">半點語音播報</string>
     <string name="settings_hourly_quiet_night">夜間不播報（22:00 至 06:00）</string>
     <string name="settings_hourly_test_label">播報測試</string>
     <string name="settings_hourly_test">立即測試</string>
-    <string name="settings_hourly_test_started">已觸發測試播報</string>
+    <string name="settings_hourly_test_queued">正在準備語音播報</string>
+    <string name="settings_hourly_test_started">播報已開始</string>
+    <string name="settings_hourly_test_done">播報完成</string>
+    <string name="settings_hourly_test_failed">播報失敗，可查看診斷日誌</string>
+    <string name="settings_hourly_test_volume_zero">媒體音量為 0，可能聽不到播報</string>
     <string name="settings_night_dim">夜間自動降低亮度（22:00 至 06:00）</string>
     <string name="settings_burn_in_protection">防烙印輕微位移</string>
     <string name="settings_confirm_exit">返回鍵退出前確認</string>
@@ -85,9 +90,11 @@
     <string name="system_settings_unavailable">系統設定入口不可用</string>
     <string name="backup_launcher_unavailable">備用啟動器不可用</string>
     <string name="hourly_announcement_text">現在是 %1$d 點整</string>
+    <string name="half_hourly_announcement_text">現在是 %1$d 點半</string>
     <string name="hourly_announcement_tts_unavailable">系統語音播報不可用</string>
     <string name="hourly_announcement_language_unavailable">系統語音播報不支援目前中文語言</string>
     <string name="hourly_announcement_tts_not_ready">系統語音播報尚未準備好</string>
+    <string name="hourly_announcement_prompt_tone_unavailable">播報提示音不可用</string>
 
     <string name="dashboard_humidity">濕度 %1$d%%</string>
     <string name="dashboard_apparent_temperature">體感 %1$d°C</string>

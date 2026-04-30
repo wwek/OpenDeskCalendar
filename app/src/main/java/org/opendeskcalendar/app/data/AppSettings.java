@@ -33,6 +33,7 @@ public final class AppSettings {
     public final String backupLauncherPackage;
     public final boolean confirmExit;
     public final boolean hourlyAnnouncementEnabled;
+    public final boolean halfHourlyAnnouncementEnabled;
     public final boolean hourlyAnnouncementQuietNight;
     public final boolean nightDimEnabled;
     public final boolean burnInProtectionEnabled;
@@ -63,6 +64,7 @@ public final class AppSettings {
             String backupLauncherPackage,
             boolean confirmExit,
             boolean hourlyAnnouncementEnabled,
+            boolean halfHourlyAnnouncementEnabled,
             boolean hourlyAnnouncementQuietNight,
             boolean nightDimEnabled,
             boolean burnInProtectionEnabled,
@@ -91,6 +93,7 @@ public final class AppSettings {
         this.backupLauncherPackage = backupLauncherPackage;
         this.confirmExit = confirmExit;
         this.hourlyAnnouncementEnabled = hourlyAnnouncementEnabled;
+        this.halfHourlyAnnouncementEnabled = halfHourlyAnnouncementEnabled;
         this.hourlyAnnouncementQuietNight = hourlyAnnouncementQuietNight;
         this.nightDimEnabled = nightDimEnabled;
         this.burnInProtectionEnabled = burnInProtectionEnabled;

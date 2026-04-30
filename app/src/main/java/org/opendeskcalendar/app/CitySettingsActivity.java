@@ -172,6 +172,7 @@ public final class CitySettingsActivity extends Activity {
                 current.backupLauncherPackage,
                 current.confirmExit,
                 current.hourlyAnnouncementEnabled,
+                current.halfHourlyAnnouncementEnabled,
                 current.hourlyAnnouncementQuietNight,
                 current.nightDimEnabled,
                 current.burnInProtectionEnabled,

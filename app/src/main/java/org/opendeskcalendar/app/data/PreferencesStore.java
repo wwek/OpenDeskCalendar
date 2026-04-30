@@ -39,6 +39,7 @@ public final class PreferencesStore {
     private static final String KEY_BACKUP = "backup_launcher";
     private static final String KEY_CONFIRM_EXIT = "confirm_exit";
     private static final String KEY_HOURLY_ANNOUNCEMENT = "hourly_announcement";
+    private static final String KEY_HALF_HOURLY_ANNOUNCEMENT = "half_hourly_announcement";
     private static final String KEY_HOURLY_QUIET_NIGHT = "hourly_quiet_night";
     private static final String KEY_NIGHT_DIM = "night_dim";
     private static final String KEY_BURN_IN = "burn_in_protection";
@@ -83,6 +84,7 @@ public final class PreferencesStore {
                 preferences.getString(KEY_BACKUP, ""),
                 preferences.getBoolean(KEY_CONFIRM_EXIT, true),
                 preferences.getBoolean(KEY_HOURLY_ANNOUNCEMENT, false),
+                preferences.getBoolean(KEY_HALF_HOURLY_ANNOUNCEMENT, false),
                 preferences.getBoolean(KEY_HOURLY_QUIET_NIGHT, true),
                 preferences.getBoolean(KEY_NIGHT_DIM, false),
                 preferences.getBoolean(KEY_BURN_IN, true),
@@ -115,6 +117,7 @@ public final class PreferencesStore {
                 .putString(KEY_BACKUP, safe(settings.backupLauncherPackage))
                 .putBoolean(KEY_CONFIRM_EXIT, settings.confirmExit)
                 .putBoolean(KEY_HOURLY_ANNOUNCEMENT, settings.hourlyAnnouncementEnabled)
+                .putBoolean(KEY_HALF_HOURLY_ANNOUNCEMENT, settings.halfHourlyAnnouncementEnabled)
                 .putBoolean(KEY_HOURLY_QUIET_NIGHT, settings.hourlyAnnouncementQuietNight)
                 .putBoolean(KEY_NIGHT_DIM, settings.nightDimEnabled)
                 .putBoolean(KEY_BURN_IN, settings.burnInProtectionEnabled)

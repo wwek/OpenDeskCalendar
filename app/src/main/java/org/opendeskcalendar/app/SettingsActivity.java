@@ -56,6 +56,7 @@ public final class SettingsActivity extends Activity {
     private CheckBox wifiCheck;
     private CheckBox confirmExitCheck;
     private CheckBox hourlyAnnouncementCheck;
+    private CheckBox halfHourlyAnnouncementCheck;
     private CheckBox hourlyQuietNightCheck;
     private CheckBox nightDimCheck;
     private CheckBox burnInCheck;
@@ -66,6 +67,7 @@ public final class SettingsActivity extends Activity {
     private EditText indoorTokenEdit;
     private TextView cityValue;
     private TextView backupValue;
+    private TextView hourlyTestStatus;
     private String backupPackage;
 
     @Override
@@ -175,6 +177,7 @@ public final class SettingsActivity extends Activity {
         keepOnCheck = check(getString(R.string.settings_keep_screen_on));
         wifiCheck = check(getString(R.string.settings_show_wifi));
         hourlyAnnouncementCheck = check(getString(R.string.settings_hourly_announcement));
+        halfHourlyAnnouncementCheck = check(getString(R.string.settings_half_hourly_announcement));
         hourlyQuietNightCheck = check(getString(R.string.settings_hourly_quiet_night));
         nightDimCheck = check(getString(R.string.settings_night_dim));
         burnInCheck = check(getString(R.string.settings_burn_in_protection));
@@ -182,10 +185,14 @@ public final class SettingsActivity extends Activity {
         root.addView(keepOnCheck);
         root.addView(wifiCheck);
         root.addView(hourlyAnnouncementCheck);
+        root.addView(halfHourlyAnnouncementCheck);
         root.addView(hourlyQuietNightCheck);
         Button testHourlyAnnouncement = button(getString(R.string.settings_hourly_test));
         testHourlyAnnouncement.setOnClickListener(v -> testHourlyAnnouncement());
         root.addView(row(getString(R.string.settings_hourly_test_label), testHourlyAnnouncement));
+        hourlyTestStatus = text("", 14, false);
+        hourlyTestStatus.setPadding(dp(112), 0, 0, dp(4));
+        root.addView(hourlyTestStatus);
         root.addView(nightDimCheck);
         root.addView(burnInCheck);
         root.addView(confirmExitCheck);
@@ -234,6 +241,7 @@ public final class SettingsActivity extends Activity {
         keyEdit.setText(current.weatherKey);
         confirmExitCheck.setChecked(current.confirmExit);
         hourlyAnnouncementCheck.setChecked(current.hourlyAnnouncementEnabled);
+        halfHourlyAnnouncementCheck.setChecked(current.halfHourlyAnnouncementEnabled);
         hourlyQuietNightCheck.setChecked(current.hourlyAnnouncementQuietNight);
         nightDimCheck.setChecked(current.nightDimEnabled);
         burnInCheck.setChecked(current.burnInProtectionEnabled);
@@ -268,6 +276,7 @@ public final class SettingsActivity extends Activity {
                 backupPackage,
                 confirmExitCheck.isChecked(),
                 hourlyAnnouncementCheck.isChecked(),
+                halfHourlyAnnouncementCheck.isChecked(),
                 hourlyQuietNightCheck.isChecked(),
                 nightDimCheck.isChecked(),
                 burnInCheck.isChecked(),
@@ -280,11 +289,18 @@ public final class SettingsActivity extends Activity {
     }
 
     private void testHourlyAnnouncement() {
+        if (hourlyTestStatus != null) {
+            hourlyTestStatus.setText(R.string.settings_hourly_test_queued);
+        }
         if (hourlyAnnouncer == null) {
             hourlyAnnouncer = new HourlyAnnouncer(this, store);
+            hourlyAnnouncer.setListener(message -> runOnUiThread(() -> {
+                if (hourlyTestStatus != null) {
+                    hourlyTestStatus.setText(message);
+                }
+            }));
         }
         hourlyAnnouncer.announceNow(java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY));
-        Toast.makeText(this, R.string.settings_hourly_test_started, Toast.LENGTH_SHORT).show();
     }
 
     private void showHomeGuide() {
