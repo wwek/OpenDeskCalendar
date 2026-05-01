@@ -77,7 +77,7 @@ public final class PreferencesStore {
                 theme,
                 preferences.getBoolean(KEY_SHOW_SECONDS, true),
                 preferences.getBoolean(KEY_USE_24H, true),
-                preferences.getBoolean(KEY_WEEK_MONDAY, false),
+                preferences.getBoolean(KEY_WEEK_MONDAY, true),
                 preferences.getBoolean(KEY_KEEP_ON, true),
                 preferences.getBoolean(KEY_BOOT, false),
                 preferences.getBoolean(KEY_SHOW_LUNAR, true),

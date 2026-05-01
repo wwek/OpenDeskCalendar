@@ -34,6 +34,8 @@ import java.lang.ref.WeakReference;
 import java.util.Calendar;
 
 public class MainActivity extends Activity implements DashboardView.Listener {
+    private static final int DASHBOARD_REFRESH_BUCKET_MINUTES = 5;
+
     private final Handler handler = new Handler();
     private PreferencesStore store;
     private CalendarRepository calendarRepository;
@@ -45,13 +47,24 @@ public class MainActivity extends Activity implements DashboardView.Listener {
     private Calendar visibleMonth;
     private Calendar selectedDate;
     private boolean launchedBackupByTap;
+    private int lastDashboardRefreshDay = -1;
+    private long lastDashboardRefreshBucket = -1L;
+    private float lastScreenBrightness = Float.NaN;
 
     private final Runnable tick = new Runnable() {
         @Override
         public void run() {
+            if (settings == null) {
+                handler.postDelayed(this, 60000L);
+                return;
+            }
             applyNightDim();
-            refreshDashboard();
-            long delay = settings != null && settings.showSeconds ? 1000L : 60000L;
+            if (shouldRefreshDashboard()) {
+                refreshDashboard();
+            } else {
+                dashboardView.refreshClock();
+            }
+            long delay = settings.showSeconds ? 1000L : 60000L;
             handler.postDelayed(this, delay);
         }
     };
@@ -220,6 +233,25 @@ public class MainActivity extends Activity implements DashboardView.Listener {
         }
         MonthGrid month = calendarRepository.buildMonth(visibleMonth, settings);
         dashboardView.update(settings, weather, indoor, month, NetworkState.from(this), selectedDate);
+        lastDashboardRefreshDay = dashboardDayKey();
+        lastDashboardRefreshBucket = dashboardRefreshBucket();
+    }
+
+    private boolean shouldRefreshDashboard() {
+        return dashboardDayKey() != lastDashboardRefreshDay
+                || dashboardRefreshBucket() != lastDashboardRefreshBucket;
+    }
+
+    private int dashboardDayKey() {
+        Calendar now = Calendar.getInstance();
+        return now.get(Calendar.YEAR) * 1000 + now.get(Calendar.DAY_OF_YEAR);
+    }
+
+    private long dashboardRefreshBucket() {
+        Calendar now = Calendar.getInstance();
+        int dayKey = now.get(Calendar.YEAR) * 1000 + now.get(Calendar.DAY_OF_YEAR);
+        int minuteOfDay = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE);
+        return (long) dayKey * 1000L + minuteOfDay / DASHBOARD_REFRESH_BUCKET_MINUTES;
     }
 
     private void scheduleHourlyAnnouncement() {
@@ -373,13 +405,19 @@ public class MainActivity extends Activity implements DashboardView.Listener {
 
     private void applyNightDim() {
         WindowManager.LayoutParams params = getWindow().getAttributes();
+        float brightness;
         if (!settings.nightDimEnabled) {
-            params.screenBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE;
+            brightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE;
         } else {
             int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
-            params.screenBrightness = hour >= 22 || hour < 6 ? 0.12f : WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE;
+            brightness = hour >= 22 || hour < 6 ? 0.12f : WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE;
         }
+        if (Float.compare(lastScreenBrightness, brightness) == 0) {
+            return;
+        }
+        params.screenBrightness = brightness;
         getWindow().setAttributes(params);
+        lastScreenBrightness = brightness;
     }
 
     private void openSystemSettings(String action) {

@@ -65,6 +65,12 @@ public final class DashboardView extends FrameLayout {
     private NetworkState networkState;
     private Calendar selectedDate;
     private TextView messageView;
+    private TextView clockDateView;
+    private TextView clockTimeView;
+    private TextView clockSuffixView;
+    private String clockDateText = "";
+    private String clockTimeText = "";
+    private String clockSuffixText = "";
     private String transientMessage = "";
     private long transientUntil = 0L;
     private int lastOrientation = 0;
@@ -105,6 +111,16 @@ public final class DashboardView extends FrameLayout {
         this.networkState = networkState;
         this.selectedDate = copyDate(selectedDate == null ? Calendar.getInstance() : selectedDate);
         buildLayout();
+    }
+
+    public void refreshClock() {
+        if (settings == null || palette == null) {
+            return;
+        }
+        Calendar now = Calendar.getInstance();
+        bindClockDate(formatDate(now));
+        bindClockTime(formatTime(now));
+        bindClockSuffix(settings.use24Hour ? "" : amPmFormat.format(now.getTime()));
     }
 
     public void showMessage(String message) {
@@ -239,10 +255,10 @@ public final class DashboardView extends FrameLayout {
 
     private View buildLandscape() {
         LinearLayout root = vertical();
-        root.addView(buildTopBar(true), new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, dp(36)));
+        root.addView(buildTopBar(true), new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, dp(28)));
 
         LinearLayout body = horizontal();
-        body.setPadding(dp(10), dp(6), dp(10), dp(8));
+        body.setPadding(dp(10), dp(2), dp(10), dp(6));
 
         LinearLayout left = vertical();
         addLandscapeCard(left, buildTimeSection(false), 1.40f, 0);
@@ -378,7 +394,7 @@ public final class DashboardView extends FrameLayout {
     private View buildTimeSection(boolean compact) {
         LinearLayout section = vertical();
         section.setGravity(Gravity.CENTER_VERTICAL);
-        section.setPadding(dp(16), compact ? dp(9) : dp(14), dp(16), compact ? dp(9) : dp(14));
+        section.setPadding(compact ? dp(16) : dp(12), compact ? dp(9) : dp(14), compact ? dp(16) : dp(12), compact ? dp(9) : dp(14));
         section.setOnLongClickListener(new OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
@@ -390,10 +406,9 @@ public final class DashboardView extends FrameLayout {
         });
 
         Calendar now = Calendar.getInstance();
-        SimpleDateFormat dateFormat = new SimpleDateFormat(
-                getResources().getString(R.string.format_full_date),
-                ChineseText.isTraditional(getContext()) ? Locale.TAIWAN : Locale.CHINA);
-        TextView date = label(dateFormat.format(now.getTime()), compact ? 15 : 18, palette.secondary, false);
+        clockDateText = formatDate(now);
+        TextView date = label(clockDateText, compact ? 15 : 18, palette.secondary, false);
+        clockDateView = date;
         date.setGravity(Gravity.CENTER);
         date.setSingleLine(true);
         date.setEllipsize(TextUtils.TruncateAt.END);
@@ -401,23 +416,24 @@ public final class DashboardView extends FrameLayout {
 
         LinearLayout row = horizontal();
         row.setGravity(compact ? Gravity.CENTER : Gravity.CENTER | Gravity.BOTTOM);
-        String main;
-        if (settings.use24Hour) {
-            main = settings.showSeconds ? time24WithSecondsFormat.format(now.getTime()) : time24Format.format(now.getTime());
-        } else {
-            main = settings.showSeconds ? time12WithSecondsFormat.format(now.getTime()) : time12Format.format(now.getTime());
-        }
-        TextView time = label(main, compact ? 58 : 64, palette.primary, true);
+        clockTimeText = formatTime(now);
+        TextView time = label(clockTimeText, compact ? 58 : 58, palette.primary, true);
+        clockTimeView = time;
         time.setIncludeFontPadding(false);
         time.setSingleLine(true);
         row.addView(time, new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
 
         if (!settings.use24Hour) {
-            TextView suffix = label(amPmFormat.format(now.getTime()), compact ? 16 : 16, palette.secondary, false);
+            clockSuffixText = amPmFormat.format(now.getTime());
+            TextView suffix = label(clockSuffixText, compact ? 16 : 16, palette.secondary, false);
+            clockSuffixView = suffix;
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
             params.leftMargin = dp(8);
             params.bottomMargin = compact ? dp(8) : dp(12);
             row.addView(suffix, params);
+        } else {
+            clockSuffixText = "";
+            clockSuffixView = null;
         }
         if (compact) {
             LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
@@ -427,6 +443,41 @@ public final class DashboardView extends FrameLayout {
             section.addView(row, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, 0, 1f));
         }
         return section;
+    }
+
+    private void bindClockDate(String value) {
+        if (clockDateView != null && !clockDateText.equals(value)) {
+            clockDateText = value;
+            clockDateView.setText(value);
+        }
+    }
+
+    private void bindClockTime(String value) {
+        if (clockTimeView != null && !clockTimeText.equals(value)) {
+            clockTimeText = value;
+            clockTimeView.setText(value);
+        }
+    }
+
+    private void bindClockSuffix(String value) {
+        if (clockSuffixView != null && !clockSuffixText.equals(value)) {
+            clockSuffixText = value;
+            clockSuffixView.setText(value);
+        }
+    }
+
+    private String formatDate(Calendar now) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat(
+                getResources().getString(R.string.format_full_date),
+                ChineseText.isTraditional(getContext()) ? Locale.TAIWAN : Locale.CHINA);
+        return dateFormat.format(now.getTime());
+    }
+
+    private String formatTime(Calendar now) {
+        if (settings.use24Hour) {
+            return settings.showSeconds ? time24WithSecondsFormat.format(now.getTime()) : time24Format.format(now.getTime());
+        }
+        return settings.showSeconds ? time12WithSecondsFormat.format(now.getTime()) : time12Format.format(now.getTime());
     }
 
     private View buildPortraitWeatherSection() {
@@ -466,11 +517,7 @@ public final class DashboardView extends FrameLayout {
         comfort.setIncludeFontPadding(false);
         details.addView(comfort, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 
-        TextView detail = label(localize(secondaryWeatherDetailText()), 12, palette.secondary, false);
-        detail.setGravity(Gravity.START);
-        detail.setIncludeFontPadding(false);
-        detail.setSingleLine(true);
-        detail.setEllipsize(TextUtils.TruncateAt.END);
+        SmoothMarqueeTextView detail = marqueeLabel(localize(secondaryWeatherDetailText()), 12, palette.secondary, false);
         LinearLayout.LayoutParams detailParams = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
         detailParams.topMargin = dp(5);
         details.addView(detail, detailParams);
@@ -501,25 +548,22 @@ public final class DashboardView extends FrameLayout {
         iconParams.rightMargin = dp(10);
         primary.addView(currentIcon, iconParams);
 
-        TextView temp = label(weather.temperatureCelsius + "°C", 42, palette.primary, true);
+        TextView temp = label(weather.temperatureCelsius + "°C", 36, palette.primary, true);
         temp.setIncludeFontPadding(false);
         temp.setSingleLine(true);
         primary.addView(temp, new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
-        section.addView(primary, new LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT, 1.05f));
+        section.addView(primary, new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
 
         LinearLayout details = vertical();
         details.setGravity(Gravity.CENTER_VERTICAL);
 
-        TextView humidity = label(currentComfortText(), 15, palette.secondary, false);
+        TextView humidity = label(currentComfortText(), 13, palette.secondary, false);
         humidity.setSingleLine(true);
         humidity.setEllipsize(TextUtils.TruncateAt.END);
         humidity.setIncludeFontPadding(false);
         details.addView(humidity, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 
-        TextView detail = label(localize(secondaryWeatherDetailText()), 13, palette.secondary, false);
-        detail.setIncludeFontPadding(false);
-        detail.setSingleLine(true);
-        detail.setEllipsize(TextUtils.TruncateAt.END);
+        SmoothMarqueeTextView detail = marqueeLabel(localize(secondaryWeatherDetailText()), 12, palette.secondary, false);
         LinearLayout.LayoutParams detailParams = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
         detailParams.topMargin = dp(5);
         details.addView(detail, detailParams);
@@ -533,7 +577,9 @@ public final class DashboardView extends FrameLayout {
             indoorParams.topMargin = dp(4);
             details.addView(indoorView, indoorParams);
         }
-        section.addView(details, new LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT, 1.10f));
+        LinearLayout.LayoutParams detailsParams = new LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f);
+        detailsParams.leftMargin = dp(16);
+        section.addView(details, detailsParams);
         return section;
     }
 
@@ -716,7 +762,8 @@ public final class DashboardView extends FrameLayout {
         title.setSingleLine(true);
         bindCalendarTitleActions(title);
         if (inlineHeader) {
-            FrameLayout header = new FrameLayout(getContext());
+            LinearLayout header = horizontal();
+            header.setGravity(Gravity.CENTER_VERTICAL);
             header.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -734,12 +781,14 @@ public final class DashboardView extends FrameLayout {
                     return true;
                 }
             });
-            header.addView(title, matchFrame());
+            title.setGravity(Gravity.CENTER_VERTICAL | Gravity.END);
+            header.addView(title, new LinearLayout.LayoutParams(0, LayoutParams.MATCH_PARENT, 1f));
             TextView lunarTitle = label(lunarHeader, compact ? 10 : 12, palette.secondary, false);
-            lunarTitle.setGravity(Gravity.CENTER_VERTICAL | Gravity.END);
+            lunarTitle.setGravity(Gravity.CENTER_VERTICAL | Gravity.START);
             lunarTitle.setSingleLine(true);
             lunarTitle.setEllipsize(TextUtils.TruncateAt.END);
-            FrameLayout.LayoutParams lunarParams = new FrameLayout.LayoutParams(compact ? dp(128) : dp(210), LayoutParams.MATCH_PARENT, Gravity.END | Gravity.CENTER_VERTICAL);
+            LinearLayout.LayoutParams lunarParams = new LinearLayout.LayoutParams(compact ? dp(118) : dp(210), LayoutParams.MATCH_PARENT);
+            lunarParams.leftMargin = dp(10);
             header.addView(lunarTitle, lunarParams);
             section.addView(header, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, compact ? dp(22) : dp(30)));
         } else {
@@ -1123,6 +1172,19 @@ public final class DashboardView extends FrameLayout {
         view.setTextSize(TypedValue.COMPLEX_UNIT_SP, sp * fontMultiplier());
         view.setTypeface(Typeface.DEFAULT, bold ? Typeface.BOLD : Typeface.NORMAL);
         view.setIncludeFontPadding(true);
+        return view;
+    }
+
+    private SmoothMarqueeTextView marqueeLabel(String value, float sp, int color, boolean bold) {
+        SmoothMarqueeTextView view = new SmoothMarqueeTextView(getContext());
+        view.setTextColor(color);
+        view.setTextSizePx(TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_SP,
+                sp * fontMultiplier(),
+                getResources().getDisplayMetrics()));
+        view.setTypeface(bold ? Typeface.DEFAULT_BOLD : Typeface.DEFAULT);
+        view.setFadeColor(settings.isMonochrome() || settings.isEink() ? palette.background : palette.panel);
+        view.setText(value);
         return view;
     }
 
