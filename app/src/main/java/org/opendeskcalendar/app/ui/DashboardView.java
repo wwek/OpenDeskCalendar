@@ -194,30 +194,30 @@ public final class DashboardView extends FrameLayout {
 
     private View buildPortrait() {
         LinearLayout root = vertical();
-        root.addView(buildTopBar(false), new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, dp(44)));
+        root.addView(buildTopBar(true), new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, dp(38)));
         root.addView(softDivider(), new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, dp(1)));
 
         View timeCard = wrapInCard(buildTimeSection(true), dp(12));
-        LinearLayout.LayoutParams timeParams = weighted(1.72f);
-        timeParams.setMargins(dp(10), dp(6), dp(10), dp(6));
+        LinearLayout.LayoutParams timeParams = weighted(1.60f);
+        timeParams.setMargins(dp(10), dp(4), dp(10), dp(4));
         root.addView(timeCard, timeParams);
 
         View weatherCard = wrapInCard(buildPortraitWeatherSection(), dp(10));
-        LinearLayout.LayoutParams weatherParams = weighted(1.02f);
-        weatherParams.setMargins(dp(10), dp(6), dp(10), dp(6));
+        LinearLayout.LayoutParams weatherParams = weighted(0.92f);
+        weatherParams.setMargins(dp(10), dp(4), dp(10), dp(4));
         root.addView(weatherCard, weatherParams);
 
         View forecastCard = wrapInCard(buildForecastSection(true), dp(10));
-        LinearLayout.LayoutParams forecastParams = weighted(1.00f);
-        forecastParams.setMargins(dp(10), dp(6), dp(10), dp(6));
+        LinearLayout.LayoutParams forecastParams = weighted(0.92f);
+        forecastParams.setMargins(dp(10), dp(4), dp(10), dp(4));
         root.addView(forecastCard, forecastParams);
 
-        View calendarCard = wrapInCard(constrainPortraitCalendarWidth(buildCalendarSection(true, true)), dp(12));
-        LinearLayout.LayoutParams calendarParams = weighted(2.78f);
-        calendarParams.setMargins(dp(10), dp(6), dp(10), dp(6));
+        View calendarCard = wrapInCard(constrainPortraitCalendarWidth(buildCalendarSection(true, false)), dp(12));
+        LinearLayout.LayoutParams calendarParams = weighted(3.30f);
+        calendarParams.setMargins(dp(10), dp(4), dp(10), dp(4));
         root.addView(calendarCard, calendarParams);
 
-        root.addView(buildBottomSection(true), new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, dp(56)));
+        root.addView(buildBottomSection(true), new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, dp(52)));
         return root;
     }
 
@@ -321,7 +321,7 @@ public final class DashboardView extends FrameLayout {
         bar.setGravity(Gravity.CENTER_VERTICAL);
         bar.setPadding(dp(16), 0, compact ? dp(10) : dp(16), 0);
 
-        TextView city = label(localize(settings.displayCity()), compact ? 17 : 19, palette.primary, true);
+        TextView city = label(localize(settings.displayCity()), compact ? 16 : 19, palette.primary, true);
         city.setSingleLine(true);
         city.setEllipsize(TextUtils.TruncateAt.END);
         city.setOnLongClickListener(new OnLongClickListener() {
@@ -346,7 +346,7 @@ public final class DashboardView extends FrameLayout {
                 }
             }
         });
-        bar.addView(settingsButton, new LinearLayout.LayoutParams(compact ? dp(38) : dp(46), LayoutParams.MATCH_PARENT));
+        bar.addView(settingsButton, new LinearLayout.LayoutParams(compact ? dp(34) : dp(46), LayoutParams.MATCH_PARENT));
 
         if (settings.showWifi) {
             int wifiColor = networkState.connected ? palette.muted : palette.warning;
@@ -368,17 +368,17 @@ public final class DashboardView extends FrameLayout {
                     return true;
                 }
             });
-            bar.addView(state, new LinearLayout.LayoutParams(compact ? dp(38) : dp(46), LayoutParams.MATCH_PARENT));
+            bar.addView(state, new LinearLayout.LayoutParams(compact ? dp(34) : dp(46), LayoutParams.MATCH_PARENT));
         }
         BatteryState battery = batteryState();
-        bar.addView(new BatteryStatusView(getContext(), battery.percent, battery.charging, palette.muted), new LinearLayout.LayoutParams(compact ? dp(42) : dp(46), LayoutParams.MATCH_PARENT));
+        bar.addView(new BatteryStatusView(getContext(), battery.percent, battery.charging, palette.muted), new LinearLayout.LayoutParams(compact ? dp(38) : dp(46), LayoutParams.MATCH_PARENT));
         return bar;
     }
 
     private View buildTimeSection(boolean compact) {
         LinearLayout section = vertical();
         section.setGravity(Gravity.CENTER_VERTICAL);
-        section.setPadding(dp(16), compact ? dp(12) : dp(14), dp(16), compact ? dp(12) : dp(14));
+        section.setPadding(dp(16), compact ? dp(9) : dp(14), dp(16), compact ? dp(9) : dp(14));
         section.setOnLongClickListener(new OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
@@ -407,7 +407,7 @@ public final class DashboardView extends FrameLayout {
         } else {
             main = settings.showSeconds ? time12WithSecondsFormat.format(now.getTime()) : time12Format.format(now.getTime());
         }
-        TextView time = label(main, compact ? 68 : 64, palette.primary, true);
+        TextView time = label(main, compact ? 58 : 64, palette.primary, true);
         time.setIncludeFontPadding(false);
         time.setSingleLine(true);
         row.addView(time, new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
@@ -421,7 +421,7 @@ public final class DashboardView extends FrameLayout {
         }
         if (compact) {
             LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
-            rowParams.topMargin = dp(12);
+            rowParams.topMargin = dp(8);
             section.addView(row, rowParams);
         } else {
             section.addView(row, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, 0, 1f));
@@ -432,7 +432,7 @@ public final class DashboardView extends FrameLayout {
     private View buildPortraitWeatherSection() {
         LinearLayout section = horizontal();
         section.setGravity(Gravity.CENTER_VERTICAL);
-        section.setPadding(dp(18), dp(8), dp(18), dp(8));
+        section.setPadding(dp(16), dp(6), dp(16), dp(6));
         section.setOnLongClickListener(new OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
@@ -446,27 +446,27 @@ public final class DashboardView extends FrameLayout {
         LinearLayout primary = horizontal();
         primary.setGravity(Gravity.CENTER_VERTICAL);
         WeatherIconView currentIcon = new WeatherIconView(getContext(), weather.condition, WeatherIconView.colorFor(weather.condition, settings, palette));
-        LinearLayout.LayoutParams iconParams = new LinearLayout.LayoutParams(dp(38), dp(38));
-        iconParams.rightMargin = dp(10);
+        LinearLayout.LayoutParams iconParams = new LinearLayout.LayoutParams(dp(32), dp(32));
+        iconParams.rightMargin = dp(8);
         primary.addView(currentIcon, iconParams);
 
-        TextView temp = label(weather.temperatureCelsius + "°C", 38, palette.primary, true);
+        TextView temp = label(weather.temperatureCelsius + "°C", 34, palette.primary, true);
         temp.setIncludeFontPadding(false);
         temp.setSingleLine(true);
         primary.addView(temp, new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
-        section.addView(primary, new LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f));
+        section.addView(primary, new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
 
         LinearLayout details = vertical();
         details.setGravity(Gravity.CENTER_VERTICAL | Gravity.START);
 
-        TextView comfort = label(currentComfortText(), 14, palette.secondary, false);
+        TextView comfort = label(currentComfortText(), 13, palette.secondary, false);
         comfort.setGravity(Gravity.START);
         comfort.setSingleLine(true);
         comfort.setEllipsize(TextUtils.TruncateAt.END);
         comfort.setIncludeFontPadding(false);
         details.addView(comfort, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 
-        TextView detail = label(localize(secondaryWeatherDetailText()), 13, palette.secondary, false);
+        TextView detail = label(localize(secondaryWeatherDetailText()), 12, palette.secondary, false);
         detail.setGravity(Gravity.START);
         detail.setIncludeFontPadding(false);
         detail.setSingleLine(true);
@@ -474,7 +474,9 @@ public final class DashboardView extends FrameLayout {
         LinearLayout.LayoutParams detailParams = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
         detailParams.topMargin = dp(5);
         details.addView(detail, detailParams);
-        section.addView(details, new LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT, 1.08f));
+        LinearLayout.LayoutParams detailsParams = new LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f);
+        detailsParams.leftMargin = dp(16);
+        section.addView(details, detailsParams);
         return section;
     }
 
@@ -588,7 +590,7 @@ public final class DashboardView extends FrameLayout {
 
     private View buildForecastSection(boolean compact) {
         LinearLayout section = vertical();
-        section.setPadding(dp(14), compact ? dp(5) : dp(10), dp(14), compact ? dp(5) : dp(12));
+        section.setPadding(dp(14), compact ? dp(2) : dp(10), dp(14), compact ? dp(2) : dp(12));
 
         LinearLayout row = horizontal();
         row.setGravity(Gravity.CENTER);
@@ -657,7 +659,7 @@ public final class DashboardView extends FrameLayout {
     private View buildForecastDay(ForecastDay day, boolean compact) {
         LinearLayout item = vertical();
         item.setGravity(Gravity.CENTER);
-        int hPad = compact ? dp(4) : dp(6);
+        int hPad = compact ? dp(2) : dp(6);
         int vPad = compact ? 0 : dp(4);
         item.setPadding(hPad, vPad, hPad, vPad);
         if (!compact) {
@@ -667,26 +669,26 @@ public final class DashboardView extends FrameLayout {
             item.setBackground(cardBg);
         }
 
-        TextView label = label(localize(day.label), compact ? 14 : 18, palette.primary, true);
+        TextView label = label(localize(day.label), compact ? 12 : 18, palette.primary, true);
         label.setGravity(Gravity.CENTER);
         label.setIncludeFontPadding(false);
         label.setSingleLine(true);
         item.addView(label, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 
         WeatherIconView symbol = new WeatherIconView(getContext(), day.condition, WeatherIconView.colorFor(day.condition, settings, palette));
-        LinearLayout.LayoutParams symbolParams = new LinearLayout.LayoutParams(compact ? dp(28) : dp(42), compact ? dp(24) : dp(38));
-        symbolParams.topMargin = compact ? dp(2) : dp(2);
-        symbolParams.bottomMargin = compact ? dp(2) : dp(2);
+        LinearLayout.LayoutParams symbolParams = new LinearLayout.LayoutParams(compact ? dp(18) : dp(42), compact ? dp(16) : dp(38));
+        symbolParams.topMargin = compact ? 0 : dp(2);
+        symbolParams.bottomMargin = compact ? 0 : dp(2);
         item.addView(symbol, symbolParams);
 
-        TextView condition = label(localize(day.condition), compact ? 13 : 17, palette.secondary, false);
+        TextView condition = label(localize(day.condition), compact ? 11 : 17, palette.secondary, false);
         condition.setGravity(Gravity.CENTER);
         condition.setIncludeFontPadding(false);
         condition.setSingleLine(true);
         condition.setEllipsize(TextUtils.TruncateAt.END);
         item.addView(condition, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 
-        TextView temp = label(day.tempRange(), compact ? 13 : 17, palette.secondary, false);
+        TextView temp = label(day.tempRange(), compact ? 10 : 17, palette.secondary, false);
         temp.setGravity(Gravity.CENTER);
         temp.setIncludeFontPadding(false);
         temp.setSingleLine(true);
@@ -743,7 +745,7 @@ public final class DashboardView extends FrameLayout {
         } else {
             section.addView(title, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 
-            TextView lunarTitle = label(lunarHeader, compact ? 13 : 15, palette.secondary, false);
+            TextView lunarTitle = label(lunarHeader, compact ? 11 : 15, palette.secondary, false);
             lunarTitle.setGravity(Gravity.CENTER);
             lunarTitle.setSingleLine(true);
             lunarTitle.setEllipsize(TextUtils.TruncateAt.END);
@@ -815,14 +817,14 @@ public final class DashboardView extends FrameLayout {
 
         LinearLayout texts = vertical();
         texts.setGravity(Gravity.CENTER);
-        TextView number = label(String.valueOf(day.day), compact ? 14 : 17, dayColor(day), true);
+        TextView number = label(String.valueOf(day.day), compact ? 13 : 17, dayColor(day), true);
         number.setGravity(Gravity.CENTER);
         number.setIncludeFontPadding(false);
         texts.addView(number, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 
         boolean showLower = settings.showLunar;
         TextView lower = label(showLower ? localize(day.lowerLabel()) : "",
-                compact ? 9 : 11,
+                compact ? 8 : 11,
                 day.inMonth ? palette.secondary : palette.muted,
                 false);
         lower.setGravity(Gravity.CENTER);
@@ -831,9 +833,11 @@ public final class DashboardView extends FrameLayout {
         lower.setIncludeFontPadding(false);
         texts.addView(lower, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
         if (isSelected(day)) {
-            texts.setPadding(dp(5), dp(3), dp(5), dp(3));
+            texts.setPadding(dp(3), dp(1), dp(3), dp(1));
             texts.setBackground(selectedDayBackground());
-            FrameLayout.LayoutParams selectedParams = new FrameLayout.LayoutParams(compact ? dp(50) : dp(60), compact ? dp(36) : dp(46), Gravity.CENTER);
+            FrameLayout.LayoutParams selectedParams = compact
+                    ? new FrameLayout.LayoutParams(dp(45), dp(34), Gravity.CENTER)
+                    : new FrameLayout.LayoutParams(dp(60), dp(46), Gravity.CENTER);
             cell.addView(texts, selectedParams);
         } else {
             cell.addView(texts, matchFrame());
