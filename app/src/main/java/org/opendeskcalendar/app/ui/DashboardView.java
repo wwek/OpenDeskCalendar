@@ -370,7 +370,8 @@ public final class DashboardView extends FrameLayout {
             });
             bar.addView(state, new LinearLayout.LayoutParams(compact ? dp(38) : dp(46), LayoutParams.MATCH_PARENT));
         }
-        bar.addView(new BatteryStatusView(getContext(), batteryPercent(), palette.muted), new LinearLayout.LayoutParams(compact ? dp(36) : dp(42), LayoutParams.MATCH_PARENT));
+        BatteryState battery = batteryState();
+        bar.addView(new BatteryStatusView(getContext(), battery.percent, battery.charging, palette.muted), new LinearLayout.LayoutParams(compact ? dp(42) : dp(46), LayoutParams.MATCH_PARENT));
         return bar;
     }
 
@@ -1012,17 +1013,32 @@ public final class DashboardView extends FrameLayout {
                 : getResources().getString(R.string.dashboard_updated_at, updateFormat.format(updated));
     }
 
-    private int batteryPercent() {
+    private BatteryState batteryState() {
         Intent intent = getContext().registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
         if (intent == null) {
-            return -1;
+            return new BatteryState(-1, false);
         }
         int level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
         int scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
+        int status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, BatteryManager.BATTERY_STATUS_UNKNOWN);
+        int plugged = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0);
+        boolean charging = status == BatteryManager.BATTERY_STATUS_CHARGING
+                || status == BatteryManager.BATTERY_STATUS_FULL
+                || plugged != 0;
         if (level < 0 || scale <= 0) {
-            return -1;
+            return new BatteryState(-1, charging);
         }
-        return Math.round(level * 100f / scale);
+        return new BatteryState(Math.round(level * 100f / scale), charging);
+    }
+
+    private static final class BatteryState {
+        final int percent;
+        final boolean charging;
+
+        BatteryState(int percent, boolean charging) {
+            this.percent = percent;
+            this.charging = charging;
+        }
     }
 
     private TextView buildMessageView() {
